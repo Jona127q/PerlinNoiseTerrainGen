@@ -1,6 +1,15 @@
-[gd_scene load_steps=2 format=3 uid="uid://cpa7nrivb4sxc"]
+[gd_scene load_steps=3 format=3 uid="uid://cpa7nrivb4sxc"]
 
 [ext_resource type="Script" path="res://MAIN.cs" id="1_4nywi"]
 
+[sub_resource type="ArrayMesh" id="ArrayMesh_mybim"]
+
 [node name="Node3D" type="Node3D"]
 script = ExtResource("1_4nywi")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("ArrayMesh_mybim")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.917317, 0.398157, 0, -0.398157, 0.917317, 0, 3.3375, 4.94917)
+current = true

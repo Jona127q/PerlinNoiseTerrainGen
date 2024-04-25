@@ -1,82 +1,80 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-
-// Local OpenCV library
-
 
 public partial class MAIN : Node3D
 {
+    public int sizeX = 20;
+    public int sizeY = 20;
+    public int stepSize = 1;
+    public List<Vector3> vertices = new List<Vector3>();
 
-	// Declare member variables here. Examples:
-	public int sizeX = 20;
-	public int sizeY = 20;
-	public int stepSize = 1;
-
-	//List with all the vertecies
-	public List<Vector3> vertecies = new List<Vector3>();
-
-	// Called when the node enters the scene tree for the first time.
-	public override void _Ready()
-	{
-		createVertecies();
-		// Create a new mesh instance
-		MeshInstance meshInstance = new MeshInstance();
-		// Create a new mesh
-		Mesh mesh = new Mesh();
-		// Create a new array of vertices
-		Godot.Collections.Array vertices = new Godot.Collections.Array();
-		// Add the vertices to the array
-		foreach (Vector3 vertex in vertecies)
-		{
-			vertices.Add(vertex);
+    public override void _Ready()
+    {
+        CreateVertices();
+		GD.Print(vertices.Count+" Vertices created:");
+		foreach (Vector3 vertex in vertices){
+			GD.Print(vertex);
 		}
-		// Set the vertices of the mesh
-		mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, new Godot.Collections.Array { vertices });
-		// Set the mesh of the mesh instance
-		meshInstance.Mesh = mesh;
-		// Add the mesh instance to the scene
-		AddChild(meshInstance);
-	}
-	
 
-	// Called every frame. 'delta' is the elapsed time since the previous frame.
-	public override void _Process(double delta)
-	{
-	}
+        // Access the existing MeshInstance3D node from the scene
+        MeshInstance3D meshInstance = GetNode<MeshInstance3D>("MeshInstance3D");
+		GD.Print("MeshInstance3D node found.");
+        
+        // Create a new array of vertices
+        Godot.Collections.Array meshVertices = new Godot.Collections.Array();
+        foreach (Vector3 vertex in vertices)
+        {
+            meshVertices.Add(vertex);
+			//GD.Print(vertex+ " added to meshVertices");
+        }
+        
+        // Create a new ArrayMesh and set the vertex array
+        ArrayMesh arrayMesh = new ArrayMesh();
+		GD.Print("ArrayMesh created.");
+        arrayMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, new Godot.Collections.Array { meshVertices });
+		GD.Print("Surface added to arrayMesh");
 
+        // Set the mesh of the MeshInstance3D
+        meshInstance.Mesh = arrayMesh;
+		GD.Print("Mesh set to MeshInstance3D");
 
+        // Create a new SpatialMaterial and assign it to the MeshInstance3D
+        StandardMaterial3D  material = new StandardMaterial3D();
+		GD.Print("StandardMaterial3D created.");
 
+        material.AlbedoColor = new Color(1, 0, 0); // Set the material color to red
+        GD.Print("Material color set to red.");
+		
+		meshInstance.MaterialOverride = material; // Assign the material to the MeshInstance3D
+		GD.Print("Material assigned to MeshInstance3D.");
 
-	public int createVertecies()
-	{
-		for (int x = 0; x < sizeX; x++)
+    }
+
+    public override void _Process(double delta)
+    {
+        // Process logic here
+    }
+
+    public void CreateVertices()
+    {
+        for (int x = 0; x < sizeX; x++)
 		{
 			for (int y = 0; y < sizeY; y++)
 			{
-				vertecies.Add(new Vector3(x*stepSize, PERLINMAGIC(x, y, stepSize), y*stepSize));
+				vertices.Add(new Vector3(x * stepSize, PERLINMAGIC(x,y), y * stepSize));
 			}
 		}
 
-
-		return 0;
-
-	}
 	
-
-	public int PERLINMAGIC(int x1, int y1, int stepSize1)
-	{
-		//Perlin noise magic
-		//return (int)(Math.Sin(x) * Math.Cos(y) * stepSize);
-		return (int)(Math.Sin(x1) * Math.Cos(y1) * stepSize1);
 	}
 
-
-
+	public float PERLINMAGIC(int x, int y)
+	{
+		//DO MAGIC HERE
+		return (float)(Math.Sin(x) + Math.Cos(y));
+	}
 
 
 
 }
-
-
