@@ -1,15 +1,21 @@
 [gd_scene load_steps=3 format=3 uid="uid://cpa7nrivb4sxc"]
 
-[ext_resource type="Script" path="res://MAIN.cs" id="1_4nywi"]
+[ext_resource type="Script" path="res://TerrainGen.cs" id="1_wgv60"]
 
-[sub_resource type="ArrayMesh" id="ArrayMesh_mybim"]
+[sub_resource type="ArrayMesh" id="ArrayMesh_csej0"]
 
 [node name="Node3D" type="Node3D"]
-script = ExtResource("1_4nywi")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("ArrayMesh_mybim")
+mesh = SubResource("ArrayMesh_csej0")
+script = ExtResource("1_wgv60")
+xSize = 10
+zSize = 10
+MULTIPLIER = 1.0
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.917317, 0.398157, 0, -0.398157, 0.917317, 0, 3.3375, 4.94917)
+transform = Transform3D(0.705613, 0.29942, -0.642229, 0.015824, 0.899454, 0.436729, 0.70842, -0.318324, 0.629929, 0, 5.74571, 8.52646)
 current = true
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.863096, 0.311302, -0.397689, 0, 0.787441, 0.61639, 0.50504, -0.532004, 0.679637, -9.39009, -4.28721, 0)
