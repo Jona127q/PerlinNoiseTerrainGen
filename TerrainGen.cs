@@ -13,6 +13,7 @@ public partial class TerrainGen : MeshInstance3D
 	public float y;
 
 	public int vert;
+	public Vector2 uv;
 
 	[Export]
 	public bool update = false;
@@ -51,6 +52,8 @@ public partial class TerrainGen : MeshInstance3D
 			{
 				y = NoiseMAGIC(x,z) * MULTIPLIER;
 
+				uv = new Vector2(Mathf.InverseLerp(0, xSize, x),Mathf.InverseLerp(0, zSize, z));
+				st.SetUV(uv);
 				st.AddVertex(new Vector3(x, y, z));
 			}
 
