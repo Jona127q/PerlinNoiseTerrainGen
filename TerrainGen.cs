@@ -60,9 +60,9 @@ public partial class TerrainGen : MeshInstance3D
 		
 		vert = 0;
 
-		for(int z = 0; z < zSize+1; z++)
+		for(int z = 0; z < zSize; z++)
 		{
-			for(int x = 0; x < xSize+1; x++)
+			for(int x = 0; x < xSize; x++)
 			{
 				st.AddIndex(vert+0);
 				st.AddIndex(vert+1);
@@ -78,9 +78,7 @@ public partial class TerrainGen : MeshInstance3D
 		}
 
 		st.GenerateNormals();
-		st.GenerateTangents();
-		st.Index();
-		
+
 		a_mesh = st.Commit(a_mesh);
 		Mesh = a_mesh;
 
