@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://cpa7nrivb4sxc"]
+[gd_scene load_steps=6 format=3 uid="uid://2ti18l1wbtkk"]
 
 [ext_resource type="Script" path="res://TerrainGen.cs" id="1_wgv60"]
 [ext_resource type="Texture2D" uid="uid://3req1trgwply" path="res://icon.svg" id="1_xkl8u"]
+[ext_resource type="Script" path="res://Camera3D.cs" id="3_unrac"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fw2ts"]
 albedo_texture = ExtResource("1_xkl8u")
@@ -14,13 +15,17 @@ albedo_texture = ExtResource("1_xkl8u")
 material_override = SubResource("StandardMaterial3D_fw2ts")
 mesh = SubResource("ArrayMesh_csej0")
 script = ExtResource("1_wgv60")
-xSize = 10
-zSize = 10
-MULTIPLIER = 1.0
+xSize = 200
+zSize = 200
+MULTIPLIER = 0.1
+vertDistance = 0.1
+update = true
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.165518, 0.616089, -0.77009, -0.0211842, 0.782901, 0.621785, 0.985979, -0.0866028, 0.142636, -1.50184, 7.60636, 8.52646)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+rotation_edit_mode = 1
 current = true
+script = ExtResource("3_unrac")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.863096, 0.311302, -0.397689, 0, 0.787441, 0.61639, 0.50504, -0.532004, 0.679637, -9.39009, -4.28721, 0)
