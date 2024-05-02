@@ -1,6 +1,8 @@
 using Godot;
 using System;
 using PerlinNoise;
+using System.Data;
+
 namespace PerlinNoiseImage
 {
 
@@ -23,11 +25,50 @@ namespace PerlinNoiseImage
 		}
 
 		public static void getPerlinNoiseImage()
-		{
+		{ // need high bitdepth
+
 			Image image = Image.Create(sizeX, sizeY, false, Image.Format.Rgb8);
 
 			const int GRID_SIZE = 400;
 
+
+			for (int x = 0; x < sizeX; x++)
+			{
+				for (int y = 0; y < sizeY; y++)
+				{
+
+
+					float val = 0;
+
+					float frequency = 1f;
+					float amplitude = 1f;
+
+
+          			for (int i = 0; i < 16; i++)
+		  			{
+          			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE) * amplitude;
+ 
+          			frequency *= 2;
+          			amplitude /= 2;
+					}
+
+
+
+					// Contrast
+					// map value to 0.0-1.0 manually
+					val = (val + 1.0f) * 0.5f;					
+
+					
+					GD.Print(" : x : " + (float)x + " : y : " + (float)y  + " : val : " + (float)val);
+					// Set the color
+					image.SetPixel(x, y, new Color(val, val, val, 1.0f));
+
+				}
+			}
+			image.SavePng("res://perlinNoiseImage.png");
+		}
+
+		public static void perlinNoiseTest(){
 
 			for (int x = 0; x < sizeX; x++)
 			{
@@ -39,36 +80,23 @@ namespace PerlinNoiseImage
 					float val = 0;
 
 
-					val += perlinNoise._perlinNoise(x , y );
+
+					val += perlinNoise._perlinNoise(x + 0.5f, y + 0.5f);
+
+
 
 
 					// Contrast
 
 					// Clipping
-					if (val > 1.0f)
-						val = 1.0f;
-					else if (val < -1.0f)
-						val = -1.0f;
+
+					
 
 					// Convert 1 to -1 into 255 to 0
-					int color = (int)((val + 1.0f * 0.5f) * 255);
-
-					// Set the color
-					image.SetPixel(x, y, new Color(color, color, color));
+					GD.Print(" : x : " + (float)x + " : y : " + (float)y  + " : val : " + (float)val);
 
 				}
 			}
-			image.SavePng("res://perlinNoiseImage.png");
 		}
 	}
 }
-/* Image image = Image.Create(sizeX, sizeY, false, Image.Format.Rgb8);
-			for (float x = 0; x < sizeX; x += 0.01f)
-			{
-				for (float y = 0; y < sizeY; y += 0.01f)
-				{
-					float noise = perlinNoise._perlinNoise(x, y);
-					image.SetPixel((int)Math.Floor(x*100), (int)Math.Floor(y*100), new Color(noise, noise, noise));
-				}
-			}
-			image.SavePng("res://perlinNoiseImage.png"); */

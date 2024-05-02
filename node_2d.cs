@@ -11,6 +11,7 @@ public partial class node_2d : Node2D
 		GD.Print("Hello, World!");
 		Thread.Sleep(1000);
 		perlinNoiseImage.getPerlinNoiseImage();
+		GD.Print("Done");
 		
 	}
 

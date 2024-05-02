@@ -1,7 +1,7 @@
 using Godot;
 using System;
 using System.Globalization;
-using System.Numerics;
+
 namespace PerlinNoise
 {
 	public partial class perlinNoise : Node3D
@@ -44,25 +44,31 @@ namespace PerlinNoise
 
 		}
 
-		public static float interpolate(float point1, float point2, float wheight){
-			return (point1 - point2) * (3.0f - wheight * 2.0f) * wheight * wheight + point1;
+
+		public static float interpolate(float point0, float point1, float wheight){
+			return (point1 - point0) * (3.0f - wheight * 2.0f) * wheight * wheight + point0;
+
 		}
 
 		public static float getDotProduct(int ix, int iy, float x, float y){
 
-			Godot.Vector2 gradientVector = randomGradient(ix, iy);
 
-			Godot.Vector2 distanceVector = new Godot.Vector2(x - (float)ix, y - (float)iy);
+			Vector2 gradientVector = randomGradient(ix, iy);
 
-			System.Numerics.Vector2 gradientVector2 = new System.Numerics.Vector2(gradientVector.X, gradientVector.Y);
-			System.Numerics.Vector2 distanceVector2 = new System.Numerics.Vector2(distanceVector.X, distanceVector.Y);
+			Vector2 distanceVector = new Vector2(x - ix, y - iy);
 
-			float dotProduct = System.Numerics.Vector2.Dot(gradientVector2, distanceVector2);
+			Vector2 gradientVector2 = new Vector2(gradientVector.X, gradientVector.Y);
+			Vector2 distanceVector2 = new Vector2(distanceVector.X, distanceVector.Y);
+
+			float dotProduct = gradientVector2.Dot(distanceVector2); //shit ass syntax
+
 
 			return dotProduct;
 		}
 
-		public static Godot.Vector2 randomGradient(int ix, int iy){
+
+		public static Vector2 randomGradient(int ix, int iy){
+
 			// No precomputed gradients mean this works for any number of grid coordinates
 			const int w = 8 * sizeof(uint);
 			const int s = w / 2;
@@ -77,7 +83,9 @@ namespace PerlinNoise
 			float random = a * (3.14159265f / ~(~0u >> 1)); // in [0, 2*Pi]
 
 			// Create the vector from the angle
-			Godot.Vector2 gradientVector = new Godot.Vector2((float)Math.Sin(random), (float)Math.Cos(random));
+
+			Vector2 gradientVector = new Vector2((float)Math.Sin(random), (float)Math.Cos(random));
+
 
 			return gradientVector;
 		}
