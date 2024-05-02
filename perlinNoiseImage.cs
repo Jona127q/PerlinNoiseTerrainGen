@@ -2,6 +2,7 @@ using Godot;
 using System;
 using PerlinNoise;
 using System.Data;
+
 namespace PerlinNoiseImage
 {
 
@@ -25,9 +26,11 @@ namespace PerlinNoiseImage
 
 		public static void getPerlinNoiseImage()
 		{ // need high bitdepth
+
 			Image image = Image.Create(sizeX, sizeY, false, Image.Format.Rgb8);
 
 			const int GRID_SIZE = 400;
+
 
 			for (int x = 0; x < sizeX; x++)
 			{
@@ -66,6 +69,7 @@ namespace PerlinNoiseImage
 		}
 
 		public static void perlinNoiseTest(){
+
 			for (int x = 0; x < sizeX; x++)
 			{
 				for (int y = 0; y < sizeY; y++)
@@ -76,13 +80,16 @@ namespace PerlinNoiseImage
 					float val = 0;
 
 
+
 					val += perlinNoise._perlinNoise(x + 0.5f, y + 0.5f);
+
 
 
 
 					// Contrast
 
 					// Clipping
+
 					
 
 					// Convert 1 to -1 into 255 to 0

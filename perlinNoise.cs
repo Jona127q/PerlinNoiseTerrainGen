@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Globalization;
+
 namespace PerlinNoise
 {
 	public partial class perlinNoise : Node3D
@@ -43,11 +44,14 @@ namespace PerlinNoise
 
 		}
 
+
 		public static float interpolate(float point0, float point1, float wheight){
 			return (point1 - point0) * (3.0f - wheight * 2.0f) * wheight * wheight + point0;
+
 		}
 
 		public static float getDotProduct(int ix, int iy, float x, float y){
+
 
 			Vector2 gradientVector = randomGradient(ix, iy);
 
@@ -58,10 +62,13 @@ namespace PerlinNoise
 
 			float dotProduct = gradientVector2.Dot(distanceVector2); //shit ass syntax
 
+
 			return dotProduct;
 		}
 
+
 		public static Vector2 randomGradient(int ix, int iy){
+
 			// No precomputed gradients mean this works for any number of grid coordinates
 			const int w = 8 * sizeof(uint);
 			const int s = w / 2;
@@ -76,7 +83,9 @@ namespace PerlinNoise
 			float random = a * (3.14159265f / ~(~0u >> 1)); // in [0, 2*Pi]
 
 			// Create the vector from the angle
+
 			Vector2 gradientVector = new Vector2((float)Math.Sin(random), (float)Math.Cos(random));
+
 
 			return gradientVector;
 		}
