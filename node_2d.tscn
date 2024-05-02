@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://mfqi73xbnucl"]
+
+[ext_resource type="Script" path="res://node_2d.cs" id="1_2ujbu"]
+
+[sub_resource type="ImageTexture" id="ImageTexture_j37io"]
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_2ujbu")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("ImageTexture_j37io")
