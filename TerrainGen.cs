@@ -20,6 +20,9 @@ public partial class TerrainGen : MeshInstance3D
 	[Export]
 	public float vertDistance = 1.0f;
 
+	[Export]
+	public float SURFACELEVEL = 50.0f;
+
 	public float y;
 
 	public int vert;
@@ -68,6 +71,11 @@ public partial class TerrainGen : MeshInstance3D
 			{
 				// Bestemmer y-værdi ud fra Noise funktion (PT BARE BØLGER)
 				y = NoiseMAGIC(x,z) * MULTIPLIER;
+
+				if (y < SURFACELEVEL)
+				{
+					y = SURFACELEVEL;
+				}
 
 				// Laver UV data for dette punkt
 				uv = new Vector2(Mathf.InverseLerp(0, xSize, x),Mathf.InverseLerp(0, zSize, z));

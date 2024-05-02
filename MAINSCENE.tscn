@@ -15,9 +15,9 @@ albedo_texture = ExtResource("1_xkl8u")
 material_override = SubResource("StandardMaterial3D_fw2ts")
 mesh = SubResource("ArrayMesh_csej0")
 script = ExtResource("1_wgv60")
-xSize = 200
-zSize = 200
-MULTIPLIER = 40.0
+xSize = 1000
+zSize = 2000
+MULTIPLIER = 300.0
 vertDistance = 0.5
 update = true
 
