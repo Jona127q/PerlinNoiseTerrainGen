@@ -1,5 +1,8 @@
 using Godot;
 using System;
+using PerlinNoise;
+
+
 
 public partial class TerrainGen : MeshInstance3D
 {
@@ -7,6 +10,10 @@ public partial class TerrainGen : MeshInstance3D
 	public int xSize = 20;
 	[Export]
 	public int zSize = 20;
+
+	[Export]
+	public int GRID_SIZE = 400;
+
 	[Export]
 	public float MULTIPLIER = 1.0f;
 
@@ -114,8 +121,33 @@ public partial class TerrainGen : MeshInstance3D
 
 	public float NoiseMAGIC(float x, float z)
 	{
-		float y = (float)(Math.Sin(x) + Math.Cos(z));
-		return y;
+		float val = 0;
+
+		float frequency = 1f;
+		float amplitude = 1f;
+
+
+
+
+			for (int i = 0; i < 16; i++)
+			{
+			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE) * amplitude;
+
+			frequency *= 2;
+			amplitude /= 2;
+			}
+
+
+
+		// Contrast
+		val *= 1.2f;
+		// Clipping using th function
+		val = Mathf.Clamp(val, -1.0f, 1.0f);
+
+		// map value to 0.0-1.0 manually
+		val = (val + 1.0f) * 0.5f;                   
+
+		return val;
 	}
 
 

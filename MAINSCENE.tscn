@@ -22,7 +22,6 @@ vertDistance = 0.1
 update = true
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 rotation_edit_mode = 1
 current = true
 script = ExtResource("3_unrac")
