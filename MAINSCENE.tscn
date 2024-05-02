@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://cpa7nrivb4sxc"]
+[gd_scene load_steps=5 format=3 uid="uid://clflpku3m60gx"]
 
 [ext_resource type="Script" path="res://TerrainGen.cs" id="1_wgv60"]
 [ext_resource type="Texture2D" uid="uid://3req1trgwply" path="res://icon.svg" id="1_xkl8u"]

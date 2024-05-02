@@ -46,9 +46,9 @@ public partial class TerrainGen : MeshInstance3D
 
 		st.Begin(Mesh.PrimitiveType.Triangles);
 		
-		for(int z = 0; z < zSize+1; z++)
+		for (int z = 0; z < zSize+1; z++)
 		{
-			for(int x = 0; x < xSize+1; x++)
+			for (int x = 0; x < xSize+1; x++)
 			{
 				y = NoiseMAGIC(x,z) * MULTIPLIER;
 
@@ -56,16 +56,14 @@ public partial class TerrainGen : MeshInstance3D
 				st.SetUV(uv);
 				st.AddVertex(new Vector3(x, y, z));
 			}
-
-
 		}
 
 		
 		vert = 0;
 
-		for(int z = 0; z < zSize; z++)
+		for (int z = 0; z < zSize; z++)
 		{
-			for(int x = 0; x < xSize; x++)
+			for (int x = 0; x < xSize; x++)
 			{
 				st.AddIndex(vert+0);
 				st.AddIndex(vert+1);
@@ -84,9 +82,6 @@ public partial class TerrainGen : MeshInstance3D
 
 		a_mesh = st.Commit(a_mesh);
 		Mesh = a_mesh;
-
-
-
 	}
 
 	public float NoiseMAGIC(float x, float z)
