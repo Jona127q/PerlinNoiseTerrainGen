@@ -119,7 +119,7 @@ public partial class TerrainGen : MeshInstance3D
 	}
 
 
-	public float NoiseMAGIC(float x, float z)
+	public float NoiseMAGIC(float x, float y)
 	{
 		float val = 0;
 
