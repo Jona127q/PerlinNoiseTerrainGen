@@ -34,9 +34,6 @@ public partial class TerrainGen : MeshInstance3D
 
 	public float MAXLEVEL;
 
-	
-	
-
 	public float y;
 
 	public int vert;
@@ -51,9 +48,11 @@ public partial class TerrainGen : MeshInstance3D
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		Generate_Terrain();
-
-
+		//Generate_Terrain();
+		//Camera3D camera = new Camera3D();
+		//camera = GetNode<Camera3D>("Camera3D");
+		//camera.position = new Vector3(xSize/2, 100, zSize/2);
+		
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -79,11 +78,11 @@ public partial class TerrainGen : MeshInstance3D
 
 		
 		// CALCULATING VALUES FOR BIOMES BY FRACTIONS OF MAXLEVEL
-		MAXLEVEL = 255;
+		MAXLEVEL = MULTIPLIER;
 		// SAND LEVEL IS 1/7 OF MAXLEVEL FROM SURFACE
-		SANDLEVEL = (MAXLEVEL-SURFACELEVEL)/7 + SURFACELEVEL;
+		SANDLEVEL = (MAXLEVEL-SURFACELEVEL)/9 + SURFACELEVEL;
 		// GRASS LEVEL IS 2/7 OF MAXLEVEL FROM SURFACE
-		GRASSLEVEL = (MAXLEVEL-SURFACELEVEL)/7*2 + SURFACELEVEL;
+		GRASSLEVEL = (MAXLEVEL-SURFACELEVEL)/9*2 + SURFACELEVEL;
 		// ROCK LEVEL IS 3/7 OF MAXLEVEL FROM SURFACE
 		ROCKLEVEL = (MAXLEVEL-SURFACELEVEL)/5*3 + SURFACELEVEL;
 		// SNOW LEVEL IS 6/7 OF MAXLEVEL FROM SURFACE
@@ -121,7 +120,7 @@ public partial class TerrainGen : MeshInstance3D
 				y = NoiseMAGIC(x,z) * MULTIPLIER;
 
 				// PRINT Y
-				GD.Print("Y: ", y);
+				//GD.Print("Y: ", y);
 
 
 				// BESTEMMER BIOME
