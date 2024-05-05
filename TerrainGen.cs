@@ -4,6 +4,7 @@ using PerlinNoise;
 
 
 
+
 public partial class TerrainGen : MeshInstance3D
 {
 	[Export]
@@ -22,6 +23,19 @@ public partial class TerrainGen : MeshInstance3D
 
 	[Export]
 	public float SURFACELEVEL = 50.0f;
+
+	public float SANDLEVEL;
+
+	public float GRASSLEVEL;
+
+	public float ROCKLEVEL;
+
+	public float SNOWLEVEL;
+
+	public float MAXLEVEL;
+
+	
+	
 
 	public float y;
 
@@ -56,6 +70,39 @@ public partial class TerrainGen : MeshInstance3D
 
 	public void Generate_Terrain()
 	{	
+		//CREATING 8k EMPTY IMAGE
+		
+		Image image = Image.Create(xSize, zSize, false, Image.Format.Rgb8);
+
+		
+
+
+		
+		// CALCULATING VALUES FOR BIOMES BY FRACTIONS OF MAXLEVEL
+		MAXLEVEL = 255;
+		// SAND LEVEL IS 1/7 OF MAXLEVEL FROM SURFACE
+		SANDLEVEL = (MAXLEVEL-SURFACELEVEL)/9 + SURFACELEVEL;
+		// GRASS LEVEL IS 2/7 OF MAXLEVEL FROM SURFACE
+		GRASSLEVEL = (MAXLEVEL-SURFACELEVEL)/9*2 + SURFACELEVEL;
+		// ROCK LEVEL IS 3/7 OF MAXLEVEL FROM SURFACE
+		ROCKLEVEL = (MAXLEVEL-SURFACELEVEL)/7*3 + SURFACELEVEL;
+		// SNOW LEVEL IS 6/7 OF MAXLEVEL FROM SURFACE
+		SNOWLEVEL = (MAXLEVEL-SURFACELEVEL)/7*6.5f + SURFACELEVEL;
+
+
+		// PRINTING LEVELS
+		GD.Print("SURFACELEVEL: ", Mathf.Round(SURFACELEVEL));
+		GD.Print("SANDLEVEL: ", Mathf.Round(SANDLEVEL));
+		GD.Print("GRASSLEVEL: ", Mathf.Round(GRASSLEVEL));
+		GD.Print("ROCKLEVEL: ", Mathf.Round(ROCKLEVEL));
+		GD.Print("SNOWLEVEL: ", Mathf.Round(SNOWLEVEL));
+		GD.Print("MAXLEVEL: ", Mathf.Round(MAXLEVEL));
+
+
+		
+
+
+		
 		// Laver Arraymesh og Surfacetool
 		ArrayMesh a_mesh = new ArrayMesh();
 		SurfaceTool st = new SurfaceTool();
@@ -66,16 +113,64 @@ public partial class TerrainGen : MeshInstance3D
 		// For hver punkt i zSize+1
 		for(int z = 0; z < zSize+1; z++)
 		{
+
 			// For hver punkt xSize+1
 			for(int x = 0; x < xSize+1; x++)
 			{
 				// Bestemmer y-værdi ud fra Noise funktion (PT BARE BØLGER)
 				y = NoiseMAGIC(x,z) * MULTIPLIER;
 
-				if (y < SURFACELEVEL)
-				{
+				// PRINT Y
+				GD.Print("Y: ", y);
+
+
+				// BESTEMMER BIOME
+				if (y <= SURFACELEVEL)
+				{	
+					// VERTEX IS WATER
+					// FLOOR SURFACE VALUE
 					y = SURFACELEVEL;
+
+					// SET COLOR TO BLUE
+					image.SetPixel(x, z, new Color(0.0f, 0.0f, 1.0f, 1.0f));
 				}
+
+				if (y <= SANDLEVEL && y > SURFACELEVEL)
+				{
+					// VERTEX IS SAND
+					// SET COLOR TO YELLOW
+					image.SetPixel(x, z, new Color(1.0f, 1.0f, 0.0f, 1.0f));
+				}
+
+				if (y <= GRASSLEVEL && y > SANDLEVEL)
+				{
+					// VERTEX IS GRASS
+					// SET COLOR TO GREEN
+					image.SetPixel(x, z, new Color(0.0f, 1.0f, 0.0f, 1.0f));
+				}
+
+				if (y <= ROCKLEVEL && y > GRASSLEVEL)
+				{
+					// VERTEX IS ROCK
+					// SET COLOR TO GREY
+					image.SetPixel(x, z, new Color(0.5f, 0.5f, 0.5f, 1.0f));
+				}
+
+				if (y <= SNOWLEVEL && y > ROCKLEVEL)
+				{
+					// VERTEX IS SNOW
+					// SET COLOR TO WHITE
+					image.SetPixel(x, z, new Color(1.0f, 1.0f, 1.0f, 1.0f));
+				}
+
+				if (y > SNOWLEVEL)
+				{
+					// VERTEX IS MOUNTAIN
+					// SET COLOR TO BLACK
+					image.SetPixel(x, z, new Color(0.0f, 0.0f, 0.0f, 1.0f));
+				}
+
+				
 
 				// Laver UV data for dette punkt
 				uv = new Vector2(Mathf.InverseLerp(0, xSize, x),Mathf.InverseLerp(0, zSize, z));
@@ -87,6 +182,10 @@ public partial class TerrainGen : MeshInstance3D
 
 
 		}
+
+		// GEM BILLEDE SOM PNG
+		image.SavePng("res://terrainImage.png");
+
 
 		// Sætter vertex til 0
 		vert = 0;
@@ -121,6 +220,19 @@ public partial class TerrainGen : MeshInstance3D
 		// Commit mesh og sæt den på Meshinstance
 		a_mesh = st.Commit(a_mesh);
 		Mesh = a_mesh;
+		ImageTexture colorTexture = new ImageTexture();
+		colorTexture.SetImage(image);
+
+		
+
+
+		StandardMaterial3D material = new StandardMaterial3D();
+		material.AlbedoTexture = colorTexture;
+
+		// Laver om på material
+		
+		MaterialOverride = material;
+
 
 
 

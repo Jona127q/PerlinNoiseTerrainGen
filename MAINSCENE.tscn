@@ -15,10 +15,10 @@ albedo_texture = ExtResource("1_xkl8u")
 material_override = SubResource("StandardMaterial3D_fw2ts")
 mesh = SubResource("ArrayMesh_csej0")
 script = ExtResource("1_wgv60")
-xSize = 1000
-zSize = 2000
+xSize = 500
+zSize = 500
 MULTIPLIER = 300.0
-vertDistance = 0.5
+SURFACELEVEL = 100.0
 update = true
 
 [node name="Camera3D" type="Camera3D" parent="."]
