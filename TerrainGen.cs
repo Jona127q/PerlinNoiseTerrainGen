@@ -69,23 +69,14 @@ public partial class TerrainGen : MeshInstance3D
 
 	public void Generate_Terrain()
 	{	
-		//CREATING 8k EMPTY IMAGE
-		
+		// Laver Image til farver (Bruges til texture)
 		Image image = Image.Create(xSize, zSize, false, Image.Format.Rgb8);
 
-		
-
-
-		
-		// CALCULATING VALUES FOR BIOMES BY FRACTIONS OF MAXLEVEL
+		// Udregner højde for skift mellem biomer
 		MAXLEVEL = MULTIPLIER;
-		// SAND LEVEL IS 1/7 OF MAXLEVEL FROM SURFACE
 		SANDLEVEL = (MAXLEVEL-SURFACELEVEL)*0.03f + SURFACELEVEL;
-		// GRASS LEVEL IS 2/7 OF MAXLEVEL FROM SURFACE
 		GRASSLEVEL = (MAXLEVEL-SURFACELEVEL)*0.2f + SURFACELEVEL;
-		// ROCK LEVEL IS 3/7 OF MAXLEVEL FROM SURFACE
 		ROCKLEVEL = (MAXLEVEL-SURFACELEVEL)*0.6f + SURFACELEVEL;
-		// SNOW LEVEL IS 6/7 OF MAXLEVEL FROM SURFACE
 		SNOWLEVEL = (MAXLEVEL-SURFACELEVEL)*0.8f + SURFACELEVEL;
 
 
@@ -97,12 +88,8 @@ public partial class TerrainGen : MeshInstance3D
 		GD.Print("SNOWLEVEL: ", Mathf.Round(SNOWLEVEL));
 		GD.Print("MAXLEVEL: ", Mathf.Round(MAXLEVEL));
 
-
 		
-
-
-		
-		// Laver Arraymesh og Surfacetool
+		// Laver Arraymesh og Surfacetool til generering af mesh
 		ArrayMesh a_mesh = new ArrayMesh();
 		SurfaceTool st = new SurfaceTool();
 
@@ -118,10 +105,6 @@ public partial class TerrainGen : MeshInstance3D
 			{
 				// Bestemmer y-værdi ud fra Noise funktion (PT BARE BØLGER)
 				y = NoiseMAGIC(x,z) * MULTIPLIER;
-
-				// PRINT Y
-				//GD.Print("Y: ", y);
-
 
 				// BESTEMMER BIOME
 				if (y <= SURFACELEVEL)
@@ -182,9 +165,12 @@ public partial class TerrainGen : MeshInstance3D
 
 		}
 
-		// GEM BILLEDE SOM PNG
+		// GEM BILLEDE SOM PNG (KUN FOR TEST)
 		image.SavePng("res://terrainImage.png");
 
+
+
+		// -------------- LAV MESH -------------- //
 
 		// Sætter vertex til 0
 		vert = 0;
@@ -219,21 +205,17 @@ public partial class TerrainGen : MeshInstance3D
 		// Commit mesh og sæt den på Meshinstance
 		a_mesh = st.Commit(a_mesh);
 		Mesh = a_mesh;
+		
+		// Laver texture og sætter den på material
 		ImageTexture colorTexture = new ImageTexture();
 		colorTexture.SetImage(image);
 
-		
-
-
+		// Laver material
 		StandardMaterial3D material = new StandardMaterial3D();
 		material.AlbedoTexture = colorTexture;
 
-		// Laver om på material
-		
+		// Sætter material på mesh
 		MaterialOverride = material;
-
-
-
 
 	}
 
