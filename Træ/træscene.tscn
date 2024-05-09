@@ -1,8 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://de5cttm1f0diu"]
+[gd_scene load_steps=3 format=3 uid="uid://de5cttm1f0diu"]
 
+[ext_resource type="Script" path="res://Træ/træscene.cs" id="1_alol5"]
 [ext_resource type="ArrayMesh" uid="uid://o82jbjhdj00l" path="res://Træ/træ.obj" id="1_dx4rx"]
 
 [node name="Træscene" type="Node3D"]
+script = ExtResource("1_alol5")
 
 [node name="Træ" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)

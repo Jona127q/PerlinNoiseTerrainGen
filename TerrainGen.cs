@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using PerlinNoise;
 
 
@@ -46,42 +47,43 @@ public partial class TerrainGen : MeshInstance3D
 
 	public uint[] MeshSeed = new uint[]
 	{
-		3284157443,
-		1911520717,
-		2048419325
+		328415744,
+		191152071,
+		204841932
 	};
 
 	public uint[] TræNoiseSeed = new uint[]
 	{
-		8194652307,
-		3579210468,
-		6250491837
+		819465230,
+		357921046,
+		625049183
 	};
 
 	public uint[] xOffsetSeed = new uint[]
 	{
-		5420381796,
-		3756128904,
-		9081237465
+		542038179,
+		375612890,
+		908123746
 	};
 
 	public uint[] zOffsetSeed = new uint[]
 	{
-		1489320576,
-		2956841730,
-		6320197845
+		148932057,
+		295684173,
+		632019784
 	};
 
 
-	// Loader træ som scene
-	PackedScene treeScene = GD.Load<PackedScene>("res://Træ/træscene.tscn");
+
+	// Træ-scene
+	PackedScene treeScene;
 
 	// laver værdi til træ-noise punkt
 	public float træNoise;
 
 	// laver mindsteværdi for træ-noise før træ bliver spawnet
 	[Export]
-	public float træThreshold = 0.5f;
+	public float træDensitet = 1.0f;
 
 	// Laver noise variabler til x og y-offset for træ
 	public float xOffset;
@@ -105,6 +107,7 @@ public partial class TerrainGen : MeshInstance3D
 	{
 		if(update)
 		{
+			FjerneTræer();
 			Generate_Terrain();
 			update = false;
 		}
@@ -140,6 +143,9 @@ public partial class TerrainGen : MeshInstance3D
 
 		// Starter Surfacetool
 		st.Begin(Mesh.PrimitiveType.Triangles);
+
+		// Loader træ-scene
+		treeScene = GD.Load<PackedScene>("res://Træ/træscene.tscn");
 		
 		// For hver punkt i zSize+1
 		for(int z = 0; z < zSize+1; z++)
@@ -192,16 +198,24 @@ public partial class TerrainGen : MeshInstance3D
 					// Bestemmer værdi for træ-noise
 					træNoise = NoiseMAGIC(x,z, TræNoiseSeed);
 
-					// Hvis træ-noise er over threshold, spawnes træ
-					if(træNoise > træThreshold)
+					
+					// [------- Efter hvor høj træ-noise er, jo større chance for at træ bliver spawnet (mellem 0 og 1) -------]
+					
+					// Generer tal mellem 0 og 1
+					float random = (float)new Random().NextDouble();
+
+					// Der ganges med træDensitet for at manipulere sandsynlighed for at spawne et træ (Densitet af træer)
+					// [Større værdi = flere træer  -  Mindre værdi = færre træer]
+					træNoise *= træDensitet;
+
+					// Hvis random er større end træNoise, så spawnes træ
+					if(træNoise > random)
 					{
 
 						// [----------- Laver offset for træ -----------]	
 
-
 						// Bestemmer x offset for træ ud fra noise
 						xOffset = (NoiseMAGIC(x,z, xOffsetSeed) * maxTræOffset)-maxTræOffset/2;
-
 
 						// Bestemmer z offset for træ ud fra noise
 						zOffset = (NoiseMAGIC(x,z, zOffsetSeed) * maxTræOffset)-maxTræOffset/2;
@@ -209,26 +223,15 @@ public partial class TerrainGen : MeshInstance3D
 
 						// [----------- Placerer Træ -----------]	
 						
+
 						// Laver træ som instans af treeScene
-						Træ træ = (Træ)treeScene.Instance() as Træ;
+						træscene NytTræ = treeScene.Instantiate() as træscene;
 
 						// Sætter position for træ
-						træ.Position = new Vector3(x*vertDistance+xOffset, y, z*vertDistance+zOffset);
+						NytTræ.Position = new Vector3(x*vertDistance+xOffset, y, z*vertDistance+zOffset);
 
 						// Tilføjer træ til træNode
-						træNode.AddChild(træ);
-
-
-						// INSPIRATION KODE
-						//spawn spillere
-						/*spiller Nyspiller = Spiller.Instantiate() as spiller;
-						GD.Print("Spiller"+i+" spawned");
-
-						//set position
-						Nyspiller.Position = new Vector2(i*100,100);
-
-						AddChild(Nyspiller);
-						GD.Print("Spiller"+i+" added to scene");*/
+						træNode.AddChild(NytTræ);
 
 					}
 
@@ -330,10 +333,7 @@ public partial class TerrainGen : MeshInstance3D
 	// Noise funktion (Perlin Noise), der kalder funktion fra PerlinNoise.cs og returnerer værdi mellem 0 og 1
 	public float NoiseMAGIC(float x, float y, uint[] seed)
 	{
-
-		// Sætter seed
-		seeds = seed;
-
+		
 		// Nulstiller højde
 		float val = 0;
 
@@ -341,14 +341,12 @@ public partial class TerrainGen : MeshInstance3D
 		float frequency = 1f;
 		float amplitude = 1f;
 
-
-
 		// Laver 16 oktaver/lag af perlin noise og lægger dem sammen
 		for (int i = 0; i < 16; i++)
 		{
 
 			// Kalder perlin noise funktion fra PerlinNoise.cs
-			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE, seeds) * amplitude;
+			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE, seed) * amplitude;
 
 			// Fordobler frekvens og amplitude halveres for hver oktav
 			frequency *= 2;
@@ -368,6 +366,25 @@ public partial class TerrainGen : MeshInstance3D
 		// Returnerer noise værdi (Højde) for den givne x og y værdi
 		return val;
 	}
+
+
+	// Fjerner træer når der genereres nyt terrain
+	public void FjerneTræer()
+	{
+		// Går til parent og finder node med navn "TRÆER"
+		Node træNode = GetParent().GetNode("TRÆER");
+
+		// For hver node under TRÆER
+		foreach(Node træ in træNode.GetChildren())
+		{
+			// Fjerner træ
+			træ.QueueFree();
+		}
+	}
+
+
+
+
 
 
 }

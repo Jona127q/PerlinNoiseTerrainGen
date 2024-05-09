@@ -26,7 +26,6 @@ public partial class Camera3D : Godot.Camera3D
 	public override void _Process(double delta)
 	{
 		// Move the camera with the arrow keys
-		Vector3 direction = new Vector3();
 		if (Input.IsActionPressed("ui_right"))
 		{
 			x = x + 1;
