@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://de5cttm1f0diu"]
+
+[ext_resource type="ArrayMesh" uid="uid://o82jbjhdj00l" path="res://Træ/træ.obj" id="1_dx4rx"]
+
+[node name="Træscene" type="Node3D"]
+
+[node name="Træ" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
+mesh = ExtResource("1_dx4rx")

@@ -46,6 +46,24 @@ public partial class TerrainGen : MeshInstance3D
 
 	public uint[] seeds;
 
+	// Loader træ som scene
+	PackedScene treeScene = GD.Load<PackedScene>("res://Træ/træscene.tscn");
+
+	// laver værdi til træ-noise punkt
+	public float træNoise;
+
+	// laver mindsteværdi for træ-noise før træ bliver spawnet
+	[Export]
+	public float træThreshold = 0.5f;
+
+	// Laver noise variabler til x og y-offset for træ
+	public float xOffset;
+	public float zOffset;
+	// Laver Max værdi for x og z-offset for træ
+	[Export]
+	public float maxTræOffset = 0.1f;
+
+
 
 
 	// Called when the node enters the scene tree for the first time.
@@ -105,7 +123,7 @@ public partial class TerrainGen : MeshInstance3D
 			{
 
 				
-				// Sætter seed mesh seed
+				// Sætter mesh seed
 				seeds = new uint[]
 				{
 				3284157443,
@@ -146,6 +164,84 @@ public partial class TerrainGen : MeshInstance3D
 					// VERTEX IS GRASS
 					// SET COLOR TO GREEN
 					image.SetPixel(x, z, new Color(0.0f, 1.0f, 0.0f, 1.0f));
+
+
+					// [------------------------- TRÆ GENERERING -------------------------]
+					
+					// Load node som træ skal placeres under (gå til parent, og find node med navn "TRÆER")
+					Node træNode = GetParent().GetNode("TRÆER");
+
+
+					// Sætter træ-noise seed
+					seeds = new uint[]
+					{
+					8194652307,
+					3579210468,
+					6250491837
+					};
+
+					// Bestemmer værdi for træ-noise
+					træNoise = NoiseMAGIC(x,z, seeds);
+
+					// Hvis træ-noise er over threshold, spawnes træ
+					if(træNoise > træThreshold)
+					{
+
+						// [----------- Laver offset for træ -----------]	
+
+						// Sætter x offset seed
+						seeds = new uint[]
+						{
+						1489320576,
+						2956841730,
+						6320197845
+						};
+
+						// Bestemmer x offset for træ ud fra noise
+						xOffset = (NoiseMAGIC(x,z, seeds) * maxTræOffset)-maxTræOffset/2;
+
+
+						// Sætter z offset seed
+						seeds = new uint[]
+						{
+						7630189425,
+						3102968475,
+						5021893746
+						};
+
+						// Bestemmer z offset for træ ud fra noise
+						zOffset = (NoiseMAGIC(x,z, seeds) * maxTræOffset)-maxTræOffset/2;
+
+
+						// [----------- Placerer Træ -----------]	
+						
+						// Laver træ som instans af treeScene
+						Træ træ = (Træ)treeScene.Instance() as Træ;
+
+						// Sætter position for træ
+						træ.Position = new Vector3(x*vertDistance+xOffset, y, z*vertDistance+zOffset);
+
+						// Tilføjer træ til træNode
+						træNode.AddChild(træ);
+
+
+						// INSPIRATION KODE
+						//spawn spillere
+						/*spiller Nyspiller = Spiller.Instantiate() as spiller;
+						GD.Print("Spiller"+i+" spawned");
+
+						//set position
+						Nyspiller.Position = new Vector2(i*100,100);
+
+						AddChild(Nyspiller);
+						GD.Print("Spiller"+i+" added to scene");*/
+
+					}
+
+					
+				
+
+
 				}
 
 				if (y <= ROCKLEVEL && y > GRASSLEVEL)
