@@ -170,7 +170,7 @@ public partial class TerrainGen : MeshInstance3D
 
 
 
-		// -------------- LAV MESH -------------- //
+		// -------------- LAV MESH AF TREKANTER -------------- //
 
 		// Sætter vertex til 0
 		vert = 0;
@@ -216,7 +216,6 @@ public partial class TerrainGen : MeshInstance3D
 
 		// Sætter material på mesh
 		MaterialOverride = material;
-
 	}
 
 
