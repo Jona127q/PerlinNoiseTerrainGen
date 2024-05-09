@@ -44,7 +44,34 @@ public partial class TerrainGen : MeshInstance3D
 	public int vert;
 	public Vector2 uv;
 
-	public uint[] seeds;
+	public uint[] MeshSeed = new uint[]
+	{
+		3284157443,
+		1911520717,
+		2048419325
+	};
+
+	public uint[] TræNoiseSeed = new uint[]
+	{
+		8194652307,
+		3579210468,
+		6250491837
+	};
+
+	public uint[] xOffsetSeed = new uint[]
+	{
+		5420381796,
+		3756128904,
+		9081237465
+	};
+
+	public uint[] zOffsetSeed = new uint[]
+	{
+		1489320576,
+		2956841730,
+		6320197845
+	};
+
 
 	// Loader træ som scene
 	PackedScene treeScene = GD.Load<PackedScene>("res://Træ/træscene.tscn");
@@ -122,17 +149,8 @@ public partial class TerrainGen : MeshInstance3D
 			for(int x = 0; x < xSize+1; x++)
 			{
 
-				
-				// Sætter mesh seed
-				seeds = new uint[]
-				{
-				3284157443,
-				1911520717,
-				2048419325
-				};
-
 				// Bestemmer y-værdi ud fra Noise funktion (PT BARE BØLGER)
-				y = NoiseMAGIC(x,z, seeds) * MULTIPLIER;
+				y = NoiseMAGIC(x,z, MeshSeed) * MULTIPLIER;
 				
 				
 				// get distance from center
@@ -171,17 +189,8 @@ public partial class TerrainGen : MeshInstance3D
 					// Load node som træ skal placeres under (gå til parent, og find node med navn "TRÆER")
 					Node træNode = GetParent().GetNode("TRÆER");
 
-
-					// Sætter træ-noise seed
-					seeds = new uint[]
-					{
-					8194652307,
-					3579210468,
-					6250491837
-					};
-
 					// Bestemmer værdi for træ-noise
-					træNoise = NoiseMAGIC(x,z, seeds);
+					træNoise = NoiseMAGIC(x,z, TræNoiseSeed);
 
 					// Hvis træ-noise er over threshold, spawnes træ
 					if(træNoise > træThreshold)
@@ -189,28 +198,13 @@ public partial class TerrainGen : MeshInstance3D
 
 						// [----------- Laver offset for træ -----------]	
 
-						// Sætter x offset seed
-						seeds = new uint[]
-						{
-						1489320576,
-						2956841730,
-						6320197845
-						};
 
 						// Bestemmer x offset for træ ud fra noise
-						xOffset = (NoiseMAGIC(x,z, seeds) * maxTræOffset)-maxTræOffset/2;
+						xOffset = (NoiseMAGIC(x,z, xOffsetSeed) * maxTræOffset)-maxTræOffset/2;
 
-
-						// Sætter z offset seed
-						seeds = new uint[]
-						{
-						7630189425,
-						3102968475,
-						5021893746
-						};
 
 						// Bestemmer z offset for træ ud fra noise
-						zOffset = (NoiseMAGIC(x,z, seeds) * maxTræOffset)-maxTræOffset/2;
+						zOffset = (NoiseMAGIC(x,z, zOffsetSeed) * maxTræOffset)-maxTræOffset/2;
 
 
 						// [----------- Placerer Træ -----------]	

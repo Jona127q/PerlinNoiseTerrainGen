@@ -17,11 +17,11 @@ script = ExtResource("1_3a7lq")
 material_override = SubResource("StandardMaterial3D_fw2ts")
 mesh = SubResource("ArrayMesh_csej0")
 script = ExtResource("1_wgv60")
-update = true
-xSize = 1000
+xSize = 500
 zSize = 500
 MULTIPLIER = 400.0
 SURFACELEVEL = 100.0
+update = true
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.863096, 0.311302, -0.397689, 0, 0.787441, 0.61639, 0.50504, -0.532004, 0.679637, -9.39009, -4.28721, 0)
@@ -35,3 +35,5 @@ sensitivity = 0.5
 
 [node name="DirectionalLight3D2" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.863096, 0.311302, -0.397689, 0, 0.787441, 0.61639, 0.50504, -0.532004, 0.679637, -9.39009, -4.28721, 0)
+
+[node name="TRÆER" type="Node3D" parent="."]
