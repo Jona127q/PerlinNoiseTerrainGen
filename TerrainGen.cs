@@ -86,11 +86,6 @@ public partial class TerrainGen : MeshInstance3D
 	[Export]
 	public float træThreshold = 0.2f;
 
-	// Laver densitet for træer
-	[Export]
-	public float træDensitet = 1.0f;
-
-
 	// Laver noise variabler til x og y-offset for træ
 	public float xOffset;
 	public float zOffset;
@@ -99,6 +94,17 @@ public partial class TerrainGen : MeshInstance3D
 	public float maxTræOffset = 0.1f;
 
 	public Node3D træNode;
+
+	// Laver distribution faktor for træer
+	[Export]
+	public float distributionFaktor = 2.5f;
+
+	
+	
+	
+	
+	// Test variabler
+	public int TestCumulativeDistributionCounter = 0;
 
 
 
@@ -199,26 +205,29 @@ public partial class TerrainGen : MeshInstance3D
 					image.SetPixel(x, z, new Color(0.0f, 1.0f, 0.0f, 1.0f));
 
 
-					// [------------------------- TRÆ GENERERING -------------------------]
 					
-					// Load node som træ skal placeres under (gå til parent, og find node med navn "TRÆER")
+					// [------------------------------------------------------------------]
+					// [------------------------- TRÆ GENERERING -------------------------]
+					// [------------------------------------------------------------------]
+					
+					// Load node der skal holde træer
 					træNode = GetParent().GetNode<Node3D>("TRÆER");
 					
 					// Bestemmer værdi for træ-noise
 					træNoise = NoiseMAGIC(x,z, TræNoiseSeed);
 
-					
-					// [------- Efter hvor høj træ-noise er, jo større chance for at træ bliver spawnet (mellem 0 og 1) -------]
-					
-					// Generer tal mellem 0 og 1
+					// Placering af træer er baseret på sandsynligheder.
+					// Hvis vi modtager en støjværdi på 1 (Maksimal styrke), vil der f.eks. være 1/1 chance for at spawne et træ (100% chance)
+					// Hvis vi derimod modtager en støjværdi på 0.5, vil der være 1/2 [0,5/1] chance for at spawne et træ (50% chance)
+
+					// Generer tilfældigt tal mellem 0 og 1
 					float random = (float)new Random().NextDouble();
 
+					// Negativ aftagende eksponentialfunktion for at manipulere sandsynlighed for at spawne et træ (Densitet af træer)
+					random = CumulativeDistribution(random, distributionFaktor)
 					
-					// Der ganges med træDensitet for at manipulere sandsynlighed for at spawne et træ (Densitet af træer)
-					// Jo større værdi, jo flere træer - Jo mindre værdi, jo færre træer
-					// 
 					// Vi tjekker om vores random værdi er højere end vores støj-værdi og om støjværdien er højere end vores threshold - Hvis det er sandt, spawnes et træ
-					if(træDensitet*random > træNoise && træNoise > træThreshold)
+					if(random > træNoise && træNoise > træThreshold)
 					{
 
 						
@@ -382,6 +391,26 @@ public partial class TerrainGen : MeshInstance3D
 			child.QueueFree();
 		}
 
+	}
+
+	// Negativ aftagende eksponentialfunktion for at manipulere sandsynlighed for at spawne et træ
+	public float CumulativeDistribution(float x, float y)
+	{
+		// Eulers tal
+		float e = new float 2.71828f; 
+
+		// Funktion
+		float x2 = new float (1 - Mathf.Pow(e, -y * x))/(1 - Mathf.Pow(e, -y));
+
+		// Printer værdier (Max 10 gange)
+		if(TestCumulativeDistribution < 10)
+		{
+			GD.Print(TestCumulativeDistributionCounter,": CumulativeDistribution før: ",x, "   -   efter: ", x2);
+			TestCumulativeDistributionCounter =+ 1;
+		}
+		
+		return x2;
+		
 	}
 
 
