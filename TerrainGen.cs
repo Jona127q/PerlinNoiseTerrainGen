@@ -7,8 +7,13 @@ using PerlinNoise;
 
 public partial class TerrainGen : MeshInstance3D
 {
+	// Sætter variabler
+	[Export]
+	public bool update = false;
+
 	[Export]
 	public int xSize = 20;
+
 	[Export]
 	public int zSize = 20;
 
@@ -39,19 +44,12 @@ public partial class TerrainGen : MeshInstance3D
 	public int vert;
 	public Vector2 uv;
 
-	[Export]
-	public bool update = false;
-
-
 
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		//Generate_Terrain();
-		//Camera3D camera = new Camera3D();
-		//camera = GetNode<Camera3D>("Camera3D");
-		//camera.position = new Vector3(xSize/2, 100, zSize/2);
+
 		
 	}
 
@@ -219,23 +217,29 @@ public partial class TerrainGen : MeshInstance3D
 	}
 
 
+
+	// Noise funktion (Perlin Noise), der kalder funktion fra PerlinNoise.cs og returnerer værdi mellem 0 og 1
 	public float NoiseMAGIC(float x, float y)
 	{
+		// Nulstiller højde
 		float val = 0;
 
+		// Sætter frekvens og amplitude
 		float frequency = 1f;
 		float amplitude = 1f;
 
 
 
-
-			for (int i = 0; i < 16; i++)
-			{
+		// Laver 16 oktaver/lag af perlin noise og lægger dem sammen
+		for (int i = 0; i < 16; i++)
+		{
+			// Kalder perlin noise funktion fra PerlinNoise.cs
 			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE) * amplitude;
 
+			// Fordobler frekvens og amplitude halveres for hver oktav
 			frequency *= 2;
 			amplitude /= 2;
-			}
+		}
 
 
 
@@ -247,6 +251,7 @@ public partial class TerrainGen : MeshInstance3D
 		// map value to 0.0-1.0 manually
 		val = (val + 1.0f) * 0.5f;                   
 
+		// Returnerer noise værdi (Højde) for den givne x og y værdi
 		return val;
 	}
 
