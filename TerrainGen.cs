@@ -99,6 +99,8 @@ public partial class TerrainGen : MeshInstance3D
 	[Export]
 	public float distributionFaktor = 2.5f;
 
+	// Eulers tal
+	public float e = 2.71828f;
 	
 	
 	
@@ -224,7 +226,7 @@ public partial class TerrainGen : MeshInstance3D
 					float random = (float)new Random().NextDouble();
 
 					// Negativ aftagende eksponentialfunktion for at manipulere sandsynlighed for at spawne et træ (Densitet af træer)
-					random = CumulativeDistribution(random, distributionFaktor)
+					random = CumulativeDistribution(random, distributionFaktor);
 					
 					// Vi tjekker om vores random værdi er højere end vores støj-værdi og om støjværdien er højere end vores threshold - Hvis det er sandt, spawnes et træ
 					if(random > træNoise && træNoise > træThreshold)
@@ -385,7 +387,7 @@ public partial class TerrainGen : MeshInstance3D
 	// Fjerner træer når der genereres nyt terrain
 	public void FjerneTræer()
 	{
-		// Går igennem alle børn under TRÆER og fjerner dem
+		// Går igennem alle 'børn' under TRÆER og fjerner dem
 		foreach (Node child in GetParent().GetNode<Node3D>("TRÆER").GetChildren())
 		{
 			child.QueueFree();
@@ -395,18 +397,15 @@ public partial class TerrainGen : MeshInstance3D
 
 	// Negativ aftagende eksponentialfunktion for at manipulere sandsynlighed for at spawne et træ
 	public float CumulativeDistribution(float x, float y)
-	{
-		// Eulers tal
-		float e = new float 2.71828f; 
-
+	{	
 		// Funktion
-		float x2 = new float (1 - Mathf.Pow(e, -y * x))/(1 - Mathf.Pow(e, -y));
+		float x2 = (float)(1 - Mathf.Pow(e, -y * x))/(1 - Mathf.Pow(e, -y));
 
 		// Printer værdier (Max 10 gange)
-		if(TestCumulativeDistribution < 10)
+		if(TestCumulativeDistributionCounter < 10)
 		{
 			GD.Print(TestCumulativeDistributionCounter,": CumulativeDistribution før: ",x, "   -   efter: ", x2);
-			TestCumulativeDistributionCounter =+ 1;
+			TestCumulativeDistributionCounter += 1;
 		}
 		
 		return x2;

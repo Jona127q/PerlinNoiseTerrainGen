@@ -23,8 +23,7 @@ zSize = 500
 MULTIPLIER = 400.0
 SURFACELEVEL = 100.0
 "træThreshold" = 0.35
-"træDensitet" = 1.2
-"maxTræOffset" = 0.0
+"maxTræOffset" = 0.5
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.863096, 0.311302, -0.397689, 0, 0.787441, 0.61639, 0.50504, -0.532004, 0.679637, -9.39009, -4.28721, 0)
