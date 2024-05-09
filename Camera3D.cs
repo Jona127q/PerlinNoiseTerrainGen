@@ -19,7 +19,7 @@ public partial class Camera3D : Godot.Camera3D
 	public override void _Ready()
 	{
 		_lastMousePosition = GetViewport().GetMousePosition();
-
+		
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -88,5 +88,9 @@ public partial class Camera3D : Godot.Camera3D
 		RotateX(deltaPosition[1] * RotationSpeed);
 
 
+	}
+	public void setPosition(Vector3 pos)
+	{
+		setPosition(pos);
 	}
 }

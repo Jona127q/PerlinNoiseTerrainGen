@@ -11,6 +11,8 @@ namespace PerlinNoiseImage
 	{
 		public static int sizeX = 400;
 		public static int sizeY = 400;
+
+		public uint[] seeds;
 		
 
 		// Called when the node enters the scene tree for the first time.
@@ -24,9 +26,10 @@ namespace PerlinNoiseImage
 		{
 		}
 
-		public static void getPerlinNoiseImage()
+		public static void getPerlinNoiseImage(int sizeX, int sizeY, uint[] seeds)
 		{ // need high bitdepth
 
+			
 			Image image = Image.Create(sizeX, sizeY, false, Image.Format.Rgb8);
 
 			const int GRID_SIZE = 400;
@@ -46,7 +49,7 @@ namespace PerlinNoiseImage
 
 		  			for (int i = 0; i < 16; i++)
 		  			{
-		  			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE) * amplitude;
+		  			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE, seeds) * amplitude;
  
 		  			frequency *= 2;
 		  			amplitude /= 2;

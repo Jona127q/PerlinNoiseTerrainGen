@@ -4,10 +4,16 @@ using PerlinNoise;
 
 
 
+
 public partial class TerrainGen : MeshInstance3D
 {
+	// Sætter variabler
+	[Export]
+	public bool update = false;
+
 	[Export]
 	public int xSize = 20;
+
 	[Export]
 	public int zSize = 20;
 
@@ -25,24 +31,30 @@ public partial class TerrainGen : MeshInstance3D
 
 	[Export]
 	public string seed = "Mount Godot";
+	public float SANDLEVEL;
+
+	public float GRASSLEVEL;
+
+	public float ROCKLEVEL;
+
+	public float SNOWLEVEL;
+
+	public float MAXLEVEL;
 
 	public float y;
 
 	public int vert;
 	public Vector2 uv;
 
-	[Export]
-	public bool update = false;
+	public uint[] seeds;
 
-	public float centerMultiplier = 1f;
 
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		Generate_Terrain();
 
-
+		
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -60,7 +72,27 @@ public partial class TerrainGen : MeshInstance3D
 
 	public void Generate_Terrain()
 	{	
-		// Laver Arraymesh og Surfacetool
+		// Laver Image til farver (Bruges til texture)
+		Image image = Image.Create(xSize, zSize, false, Image.Format.Rgb8);
+
+		// Udregner højde for skift mellem biomer
+		MAXLEVEL = MULTIPLIER;
+		SANDLEVEL = (MAXLEVEL-SURFACELEVEL)*0.03f + SURFACELEVEL;
+		GRASSLEVEL = (MAXLEVEL-SURFACELEVEL)*0.2f + SURFACELEVEL;
+		ROCKLEVEL = (MAXLEVEL-SURFACELEVEL)*0.6f + SURFACELEVEL;
+		SNOWLEVEL = (MAXLEVEL-SURFACELEVEL)*0.8f + SURFACELEVEL;
+
+
+		// PRINTING LEVELS
+		GD.Print("SURFACELEVEL: ", Mathf.Round(SURFACELEVEL));
+		GD.Print("SANDLEVEL: ", Mathf.Round(SANDLEVEL));
+		GD.Print("GRASSLEVEL: ", Mathf.Round(GRASSLEVEL));
+		GD.Print("ROCKLEVEL: ", Mathf.Round(ROCKLEVEL));
+		GD.Print("SNOWLEVEL: ", Mathf.Round(SNOWLEVEL));
+		GD.Print("MAXLEVEL: ", Mathf.Round(MAXLEVEL));
+
+		
+		// Laver Arraymesh og Surfacetool til generering af mesh
 		ArrayMesh a_mesh = new ArrayMesh();
 		SurfaceTool st = new SurfaceTool();
 
@@ -70,21 +102,77 @@ public partial class TerrainGen : MeshInstance3D
 		// For hver punkt i zSize+1
 		for(int z = 0; z < zSize+1; z++)
 		{
+
 			// For hver punkt xSize+1
 			for(int x = 0; x < xSize+1; x++)
 			{
+
+				
+				// Sætter seed mesh seed
+				seeds = new uint[]
+				{
+				3284157443,
+				1911520717,
+				2048419325
+				};
+
 				// Bestemmer y-værdi ud fra Noise funktion (PT BARE BØLGER)
-				y = NoiseMAGIC(x,z) * MULTIPLIER;
+				y = NoiseMAGIC(x,z, seeds) * MULTIPLIER;
+				
+				
 				// get distance from center
-				float distanceToMiddle = Mathf.Sqrt(Mathf.Pow(x - xSize / 2, 2) + Mathf.Pow(z - zSize / 2, 2));
+				//float distanceToMiddle = Mathf.Sqrt(Mathf.Pow(x - xSize / 2, 2) + Mathf.Pow(z - zSize / 2, 2));
 				// set y value to be higher in the middle
-				y += centerMultiplier * Mathf.Pow(1 - Mathf.Clamp(distanceToMiddle / (xSize / 2), 0, 1), 2);
+				//y += centerMultiplier * Mathf.Pow(1 - Mathf.Clamp(distanceToMiddle / (xSize / 2), 0, 1), 2);
 				
 
-				if (y < SURFACELEVEL)
-				{
+				// BESTEMMER BIOME
+				if (y <= SURFACELEVEL)
+				{	
+					// VERTEX IS WATER
+					// FLOOR SURFACE VALUE
 					y = SURFACELEVEL;
+
+					// SET COLOR TO BLUE
+					image.SetPixel(x, z, new Color(0.0f, 0.0f, 1.0f, 1.0f));
 				}
+
+				if (y <= SANDLEVEL && y > SURFACELEVEL)
+				{
+					// VERTEX IS SAND
+					// SET COLOR TO YELLOW
+					image.SetPixel(x, z, new Color(1.0f, 1.0f, 0.0f, 1.0f));
+				}
+
+				if (y <= GRASSLEVEL && y > SANDLEVEL)
+				{
+					// VERTEX IS GRASS
+					// SET COLOR TO GREEN
+					image.SetPixel(x, z, new Color(0.0f, 1.0f, 0.0f, 1.0f));
+				}
+
+				if (y <= ROCKLEVEL && y > GRASSLEVEL)
+				{
+					// VERTEX IS ROCK
+					// SET COLOR TO GREY
+					image.SetPixel(x, z, new Color(0.5f, 0.5f, 0.5f, 1.0f));
+				}
+
+				if (y <= SNOWLEVEL && y > ROCKLEVEL)
+				{
+					// VERTEX IS SNOW
+					// SET COLOR TO WHITE
+					image.SetPixel(x, z, new Color(1.0f, 1.0f, 1.0f, 1.0f));
+				}
+
+				if (y > SNOWLEVEL)
+				{
+					// VERTEX IS MOUNTAIN
+					// SET COLOR TO White
+					image.SetPixel(x, z, new Color(1.0f, 1.0f, 1.0f, 1.0f));
+				}
+
+				
 
 				// Laver UV data for dette punkt
 				uv = new Vector2(Mathf.InverseLerp(0, xSize, x),Mathf.InverseLerp(0, zSize, z));
@@ -96,6 +184,13 @@ public partial class TerrainGen : MeshInstance3D
 
 
 		}
+
+		// GEM BILLEDE SOM PNG (KUN FOR TEST)
+		image.SavePng("res://terrainImage.png");
+
+
+
+		// -------------- LAV MESH AF TREKANTER -------------- //
 
 		// Sætter vertex til 0
 		vert = 0;
@@ -130,29 +225,48 @@ public partial class TerrainGen : MeshInstance3D
 		// Commit mesh og sæt den på Meshinstance
 		a_mesh = st.Commit(a_mesh);
 		Mesh = a_mesh;
+		
+		// Laver texture og sætter den på material
+		ImageTexture colorTexture = new ImageTexture();
+		colorTexture.SetImage(image);
 
+		// Laver material
+		StandardMaterial3D material = new StandardMaterial3D();
+		material.AlbedoTexture = colorTexture;
 
-
+		// Sætter material på mesh
+		MaterialOverride = material;
 	}
 
 
-	public float NoiseMAGIC(float x, float y)
+
+	// Noise funktion (Perlin Noise), der kalder funktion fra PerlinNoise.cs og returnerer værdi mellem 0 og 1
+	public float NoiseMAGIC(float x, float y, uint[] seed)
 	{
+
+		// Sætter seed
+		seeds = seed;
+
+		// Nulstiller højde
 		float val = 0;
 
+		// Sætter frekvens og amplitude
 		float frequency = 1f;
 		float amplitude = 1f;
 
 
 
+		// Laver 16 oktaver/lag af perlin noise og lægger dem sammen
+		for (int i = 0; i < 16; i++)
+		{
 
-			for (int i = 0; i < 16; i++)
-			{
-			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE) * amplitude;
+			// Kalder perlin noise funktion fra PerlinNoise.cs
+			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE, seeds) * amplitude;
 
+			// Fordobler frekvens og amplitude halveres for hver oktav
 			frequency *= 2;
 			amplitude /= 2;
-			}
+		}
 
 
 
@@ -164,6 +278,7 @@ public partial class TerrainGen : MeshInstance3D
 		// map value to 0.0-1.0 manually
 		val = (val + 1.0f) * 0.5f;
 
+		// Returnerer noise værdi (Højde) for den givne x og y værdi
 		return val;
 	}
 
