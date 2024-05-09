@@ -10,10 +10,6 @@ public partial class MAINSCENE : Node3D
 		terrain.Call("Generate_Terrain");
 
 		GD.Print("zSize: "+(float)terrain.Get("zSize")+ " MULTIPLIER: "+(float)terrain.Get("MULTIPLIER") + " xSize: "+(float)(terrain.Get("xSize")));
-
-		Camera3D camera = GetNode<Camera3D>("Camera");
-		camera.Call("Set_Camera_Position", new Vector3((float)terrain.Get("zSize"), (float)terrain.Get("MULTIPLIER") , (float)(terrain.Get("xSize"))));
-
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.

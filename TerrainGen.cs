@@ -30,7 +30,7 @@ public partial class TerrainGen : MeshInstance3D
 	public float SURFACELEVEL = 0.0f;
 
 	[Export]
-	public string seed = "Mount Godot";
+	public string seed = "schmungus";
 	public float SANDLEVEL;
 
 	public float GRASSLEVEL;
@@ -109,15 +109,9 @@ public partial class TerrainGen : MeshInstance3D
 
 				
 				// Sætter seed mesh seed
-				seeds = new uint[]
-				{
-				3284157443,
-				1911520717,
-				2048419325
-				};
 
 				// Bestemmer y-værdi ud fra Noise funktion (PT BARE BØLGER)
-				y = NoiseMAGIC(x,z, seeds) * MULTIPLIER;
+				y = NoiseMAGIC(x,z) * MULTIPLIER;
 				
 				
 				// get distance from center
@@ -241,11 +235,8 @@ public partial class TerrainGen : MeshInstance3D
 
 
 	// Noise funktion (Perlin Noise), der kalder funktion fra PerlinNoise.cs og returnerer værdi mellem 0 og 1
-	public float NoiseMAGIC(float x, float y, uint[] seed)
+	public float NoiseMAGIC(float x, float y)
 	{
-
-		// Sætter seed
-		seeds = seed;
 
 		// Nulstiller højde
 		float val = 0;
@@ -261,7 +252,7 @@ public partial class TerrainGen : MeshInstance3D
 		{
 
 			// Kalder perlin noise funktion fra PerlinNoise.cs
-			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE, seeds) * amplitude;
+			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE) * amplitude;
 
 			// Fordobler frekvens og amplitude halveres for hver oktav
 			frequency *= 2;

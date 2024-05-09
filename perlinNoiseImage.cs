@@ -49,7 +49,7 @@ namespace PerlinNoiseImage
 
 		  			for (int i = 0; i < 16; i++)
 		  			{
-		  			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE, seeds) * amplitude;
+		  			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE) * amplitude;
  
 		  			frequency *= 2;
 		  			amplitude /= 2;

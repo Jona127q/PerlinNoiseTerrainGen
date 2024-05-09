@@ -12,17 +12,10 @@ namespace PerlinNoise
 			2048419325
 		};
 
-
-		public static uint[] seeds;
-
-
-		public string seed = "Mount Gododt";
-
-
 		// Called when the node enters the scene tree for the first time.
 		public override void _Ready(){
-			newSeed("Mount Godot");
 			//newSeed(seed);
+			GD.Print("New seed: ", seeds[0], " ", seeds[1], " ", seeds[2]);
 		}
 
 		// Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -31,10 +24,7 @@ namespace PerlinNoise
 
 
 
-		public static float _perlinNoise(float x, float y, uint[] seedInput){
-			
-			// Sætter seed
-			seeds = seedInput;
+		public static float _perlinNoise(float x, float y){
 
 			int x0 = (int)x;
 			int y0 = (int)y;
@@ -110,30 +100,50 @@ namespace PerlinNoise
 			return gradientVector;
 		}
 		public static void newSeed(string seed){
-			using (MD5 md5 = MD5.Create()){
+			while (seed.Length < 35)
+			{
+				seed += seed;
+			}
+			
+			if (seed.Length > 35)
+			{
+				seed = seed.Substring(0, 35);
+			}
+
+			using (MD5 md5 = MD5.Create())
+			{
 				byte[] inputBytes = Encoding.UTF8.GetBytes(seed);
 				byte[] hashBytes = md5.ComputeHash(inputBytes);
-				string hashString = BitConverter.ToString(hashBytes).Replace("-", "").Substring(0, 11);
+				string hashString = BitConverter.ToString(hashBytes).Replace("-", "");
 
-				if (hashString.Length < 35){
-					hashString += hashString;
+				if (hashString.Length < 35)
+				{
+					while (hashString.Length < 35)
+					{
+						hashString += hashString;
+					}
 				}
-				else if (hashString.Length > 35){
+				else if (hashString.Length > 35)
+				{
 					hashString = hashString.Substring(0, 35);
 				}
+
 				uint[] newSeeds = new uint[3];
 
 				for (int i = 0; i < 3; i++)
 				{
-					int startIndex = i * 4;
-					string chunk = hashString.Substring(startIndex, 4);
+					int startIndex = i * 11;
+					int length = Math.Min(11, hashString.Length - startIndex); // Ensure length doesn't exceed remaining characters
+					string chunk = hashString.Substring(startIndex, length);
+					// Truncate chunk if it exceeds the maximum value for UInt32
+					if (chunk.Length > 8)
+					{
+						chunk = chunk.Substring(0, 8);
+					}
 					newSeeds[i] = Convert.ToUInt32(chunk, 16);
-				
-
-					seeds = newSeeds;
-					
 				}
-				return;
+
+				seeds = newSeeds;
 			}
 		}
 	}
