@@ -11,12 +11,11 @@ namespace PerlinNoise
 			1911520717,
 			2048419325
 		};
-		public string seed = "Mount Gododt";
 
 
 		// Called when the node enters the scene tree for the first time.
 		public override void _Ready(){
-			newSeed(seed);
+			newSeed("Mount Godot");
 		}
 
 		// Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -106,6 +105,12 @@ namespace PerlinNoise
 				byte[] hashBytes = md5.ComputeHash(inputBytes);
 				string hashString = BitConverter.ToString(hashBytes).Replace("-", "").Substring(0, 11);
 
+				if (hashString.Length < 35){
+					hashString += hashString;
+				}
+				else if (hashString.Length > 35){
+					hashString = hashString.Substring(0, 35);
+				}
 				uint[] newSeeds = new uint[3];
 
 				for (int i = 0; i < 3; i++)
@@ -113,11 +118,13 @@ namespace PerlinNoise
 					int startIndex = i * 4;
 					string chunk = hashString.Substring(startIndex, 4);
 					newSeeds[i] = Convert.ToUInt32(chunk, 16);
-				}
+				
 
-				seeds = newSeeds;
+					seeds = newSeeds;
+					
+				}
+				return;
 			}
 		}
-
 	}
 }

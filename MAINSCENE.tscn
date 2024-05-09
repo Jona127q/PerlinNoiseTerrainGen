@@ -17,7 +17,8 @@ mesh = SubResource("ArrayMesh_csej0")
 script = ExtResource("1_wgv60")
 xSize = 1000
 zSize = 1000
-MULTIPLIER = 100.0
+MULTIPLIER = 300.0
+seed = "yolo bitch"
 update = true
 
 [node name="Camera3D" type="Camera3D" parent="."]

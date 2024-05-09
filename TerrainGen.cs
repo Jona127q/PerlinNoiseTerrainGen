@@ -23,6 +23,9 @@ public partial class TerrainGen : MeshInstance3D
 	[Export]
 	public float SURFACELEVEL = 0.0f;
 
+	[Export]
+	public string seed = "Mount Godot";
+
 	public float y;
 
 	public int vert;
@@ -47,6 +50,7 @@ public partial class TerrainGen : MeshInstance3D
 	{
 		if(update)
 		{
+			perlinNoise.newSeed(seed);
 			Generate_Terrain();
 			update = false;
 		}
