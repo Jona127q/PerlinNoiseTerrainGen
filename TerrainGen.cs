@@ -44,6 +44,7 @@ public partial class TerrainGen : MeshInstance3D
 
 	public int vert;
 	public Vector2 uv;
+	public float kantAfstand;
 
 	public uint[] MeshSeed = new uint[]
 	{
@@ -81,9 +82,14 @@ public partial class TerrainGen : MeshInstance3D
 	// laver værdi til træ-noise punkt
 	public float træNoise;
 
-	// laver mindsteværdi for træ-noise før træ bliver spawnet
+	// laver mindsteværdi for træ-noise før træ bliver spawnet (Mellem 0 og 1)
+	[Export]
+	public float træThreshold = 0.2f;
+
+	// Laver densitet for træer
 	[Export]
 	public float træDensitet = 1.0f;
+
 
 	// Laver noise variabler til x og y-offset for træ
 	public float xOffset;
@@ -92,6 +98,10 @@ public partial class TerrainGen : MeshInstance3D
 	[Export]
 	public float maxTræOffset = 0.1f;
 
+	public Node3D træNode;
+
+
+
 
 
 
@@ -99,7 +109,6 @@ public partial class TerrainGen : MeshInstance3D
 	public override void _Ready()
 	{
 
-		
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -193,8 +202,8 @@ public partial class TerrainGen : MeshInstance3D
 					// [------------------------- TRÆ GENERERING -------------------------]
 					
 					// Load node som træ skal placeres under (gå til parent, og find node med navn "TRÆER")
-					Node træNode = GetParent().GetNode("TRÆER");
-
+					træNode = GetParent().GetNode<Node3D>("TRÆER");
+					
 					// Bestemmer værdi for træ-noise
 					træNoise = NoiseMAGIC(x,z, TræNoiseSeed);
 
@@ -204,21 +213,20 @@ public partial class TerrainGen : MeshInstance3D
 					// Generer tal mellem 0 og 1
 					float random = (float)new Random().NextDouble();
 
+					
 					// Der ganges med træDensitet for at manipulere sandsynlighed for at spawne et træ (Densitet af træer)
-					// [Større værdi = flere træer  -  Mindre værdi = færre træer]
-					træNoise *= træDensitet;
-
-					// Hvis random er større end træNoise, så spawnes træ
-					if(træNoise > random)
+					// Jo større værdi, jo flere træer - Jo mindre værdi, jo færre træer
+					// 
+					// Vi tjekker om vores random værdi er højere end vores støj-værdi og om støjværdien er højere end vores threshold - Hvis det er sandt, spawnes et træ
+					if(træDensitet*random > træNoise && træNoise > træThreshold)
 					{
 
+						
 						// [----------- Laver offset for træ -----------]	
 
-						// Bestemmer x offset for træ ud fra noise
-						xOffset = (NoiseMAGIC(x,z, xOffsetSeed) * maxTræOffset)-maxTræOffset/2;
-
-						// Bestemmer z offset for træ ud fra noise
-						zOffset = (NoiseMAGIC(x,z, zOffsetSeed) * maxTræOffset)-maxTræOffset/2;
+						// Bestemmer random x og z-akse offsets for træ
+						xOffset = (float)new Random().NextDouble()*maxTræOffset;
+						zOffset = (float)new Random().NextDouble()*maxTræOffset;
 
 
 						// [----------- Placerer Træ -----------]	
@@ -228,15 +236,12 @@ public partial class TerrainGen : MeshInstance3D
 						træscene NytTræ = treeScene.Instantiate() as træscene;
 
 						// Sætter position for træ
-						NytTræ.Position = new Vector3(x*vertDistance+xOffset, y, z*vertDistance+zOffset);
+						NytTræ.Position = new Vector3(x+xOffset, y, z+zOffset);
 
 						// Tilføjer træ til træNode
 						træNode.AddChild(NytTræ);
 
 					}
-
-					
-				
 
 
 				}
@@ -371,15 +376,12 @@ public partial class TerrainGen : MeshInstance3D
 	// Fjerner træer når der genereres nyt terrain
 	public void FjerneTræer()
 	{
-		// Går til parent og finder node med navn "TRÆER"
-		Node træNode = GetParent().GetNode("TRÆER");
-
-		// For hver node under TRÆER
-		foreach(Node træ in træNode.GetChildren())
+		// Går igennem alle børn under TRÆER og fjerner dem
+		foreach (Node child in GetParent().GetNode<Node3D>("TRÆER").GetChildren())
 		{
-			// Fjerner træ
-			træ.QueueFree();
+			child.QueueFree();
 		}
+
 	}
 
 
