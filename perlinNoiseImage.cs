@@ -44,12 +44,12 @@ namespace PerlinNoiseImage
 					float amplitude = 1f;
 
 
-          			for (int i = 0; i < 16; i++)
+		  			for (int i = 0; i < 16; i++)
 		  			{
-          			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE) * amplitude;
+		  			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE) * amplitude;
  
-          			frequency *= 2;
-          			amplitude /= 2;
+		  			frequency *= 2;
+		  			amplitude /= 2;
 					}
 
 

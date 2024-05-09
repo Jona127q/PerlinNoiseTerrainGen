@@ -21,7 +21,7 @@ public partial class TerrainGen : MeshInstance3D
 	public float vertDistance = 1.0f;
 
 	[Export]
-	public float SURFACELEVEL = 50.0f;
+	public float SURFACELEVEL = 0.0f;
 
 	public float y;
 
@@ -31,7 +31,7 @@ public partial class TerrainGen : MeshInstance3D
 	[Export]
 	public bool update = false;
 
-
+	public float centerMultiplier = 1f;
 
 
 	// Called when the node enters the scene tree for the first time.
@@ -71,6 +71,11 @@ public partial class TerrainGen : MeshInstance3D
 			{
 				// Bestemmer y-værdi ud fra Noise funktion (PT BARE BØLGER)
 				y = NoiseMAGIC(x,z) * MULTIPLIER;
+				// get distance from center
+				float distanceToMiddle = Mathf.Sqrt(Mathf.Pow(x - xSize / 2, 2) + Mathf.Pow(z - zSize / 2, 2));
+				// set y value to be higher in the middle
+				y += centerMultiplier * Mathf.Pow(1 - Mathf.Clamp(distanceToMiddle / (xSize / 2), 0, 1), 2);
+				
 
 				if (y < SURFACELEVEL)
 				{
@@ -153,7 +158,7 @@ public partial class TerrainGen : MeshInstance3D
 		val = Mathf.Clamp(val, -1.0f, 1.0f);
 
 		// map value to 0.0-1.0 manually
-		val = (val + 1.0f) * 0.5f;                   
+		val = (val + 1.0f) * 0.5f;
 
 		return val;
 	}

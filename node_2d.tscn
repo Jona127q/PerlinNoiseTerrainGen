@@ -1,6 +1,4 @@
-
 [gd_scene load_steps=3 format=3 uid="uid://mfqi73xbnucl"]
-
 
 [ext_resource type="Script" path="res://node_2d.cs" id="1_2ujbu"]
 

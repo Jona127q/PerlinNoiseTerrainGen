@@ -64,6 +64,7 @@ public partial class Camera3D : Godot.Camera3D
 			x = x + 1;
 		}
 
+		GD.Print("x : " + Position.X + " : y :  " + Position.Y + " : z : " +  Position.Z);
 		// Move the camera
 		Translate(new Vector3(x, y, z));
 
@@ -80,7 +81,8 @@ public partial class Camera3D : Godot.Camera3D
 	
 
 		//Horizontal rotation 
-		//RotateY(deltaPosition[0] * RotationSpeed);
+		RotateY(deltaPosition[0] * RotationSpeed);
+		
 
 		// Vertical rotation
 		RotateX(deltaPosition[1] * RotationSpeed);
