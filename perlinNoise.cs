@@ -6,17 +6,17 @@ using System.Text;
 namespace PerlinNoise
 {
 	public partial class perlinNoise : Node3D{
-		public static uint[] seeds = new uint[] {
-			3284157443,
-			1911520717,
-			2048419325
-		};
+
+
+		public static uint[] seeds;
+
+
 		public string seed = "Mount Gododt";
 
 
 		// Called when the node enters the scene tree for the first time.
 		public override void _Ready(){
-			newSeed(seed);
+			//newSeed(seed);
 		}
 
 		// Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -25,7 +25,10 @@ namespace PerlinNoise
 
 
 
-		public static float _perlinNoise(float x, float y){
+		public static float _perlinNoise(float x, float y, uint[] seedInput){
+			
+			// Sætter seed
+			seeds = seedInput;
 
 			int x0 = (int)x;
 			int y0 = (int)y;

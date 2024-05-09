@@ -44,6 +44,8 @@ public partial class TerrainGen : MeshInstance3D
 	public int vert;
 	public Vector2 uv;
 
+	public uint[] seeds;
+
 
 
 	// Called when the node enters the scene tree for the first time.
@@ -101,12 +103,24 @@ public partial class TerrainGen : MeshInstance3D
 			// For hver punkt xSize+1
 			for(int x = 0; x < xSize+1; x++)
 			{
+
+				
+				// Sætter seed mesh seed
+				seeds = new uint[]
+				{
+				3284157443,
+				1911520717,
+				2048419325
+				};
+
 				// Bestemmer y-værdi ud fra Noise funktion (PT BARE BØLGER)
-				y = NoiseMAGIC(x,z) * MULTIPLIER;
+				y = NoiseMAGIC(x,z, seeds) * MULTIPLIER;
+				
+				
 				// get distance from center
-				float distanceToMiddle = Mathf.Sqrt(Mathf.Pow(x - xSize / 2, 2) + Mathf.Pow(z - zSize / 2, 2));
+				//float distanceToMiddle = Mathf.Sqrt(Mathf.Pow(x - xSize / 2, 2) + Mathf.Pow(z - zSize / 2, 2));
 				// set y value to be higher in the middle
-				y += centerMultiplier * Mathf.Pow(1 - Mathf.Clamp(distanceToMiddle / (xSize / 2), 0, 1), 2);
+				//y += centerMultiplier * Mathf.Pow(1 - Mathf.Clamp(distanceToMiddle / (xSize / 2), 0, 1), 2);
 				
 
 				// BESTEMMER BIOME
@@ -224,8 +238,12 @@ public partial class TerrainGen : MeshInstance3D
 
 
 	// Noise funktion (Perlin Noise), der kalder funktion fra PerlinNoise.cs og returnerer værdi mellem 0 og 1
-	public float NoiseMAGIC(float x, float y)
+	public float NoiseMAGIC(float x, float y, uint[] seed)
 	{
+
+		// Sætter seed
+		seeds = seed;
+
 		// Nulstiller højde
 		float val = 0;
 
@@ -238,8 +256,9 @@ public partial class TerrainGen : MeshInstance3D
 		// Laver 16 oktaver/lag af perlin noise og lægger dem sammen
 		for (int i = 0; i < 16; i++)
 		{
+
 			// Kalder perlin noise funktion fra PerlinNoise.cs
-			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE) * amplitude;
+			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE, seeds) * amplitude;
 
 			// Fordobler frekvens og amplitude halveres for hver oktav
 			frequency *= 2;
