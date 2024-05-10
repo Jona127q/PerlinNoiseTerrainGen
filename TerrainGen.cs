@@ -99,14 +99,45 @@ public partial class TerrainGen : MeshInstance3D
 	[Export]
 	public float distributionFaktor = 2.5f;
 
+	// Laver variabel til at bestemme generation case af træer
+	public int GenerationCase;
+
+	// Laver variabel til at bestemme om træer skal genereres
+	public bool genererTræ;
+
+	// Laver variabel til at bestemme kantblur for træer
+	[Export]
+	public float træKantBlur = 0.07f;
+
+	// Laver variabel til at bestemme blur mellem græs og træ
+	[Export]
+	public float StenKantBlur = 0.00f;
+
+
+	// Vægt til afstandsberegning
+	public float vægt;
+
+	
+	
 	// Eulers tal
 	public float e = 2.71828f;
+
+
+	
 	
 	
 	
 	
 	// Test variabler
-	public int TestCumulativeDistributionCounter = 0;
+	public int TestCounter1 = 0;
+	public int TestCounter2 = 100;
+	public int TestCounter3 = 100;
+	public int TestCounter4 = 100000;
+
+	public float TestValue1 = 0.2f;
+
+	public bool TestBool = true;
+
 
 
 
@@ -124,7 +155,7 @@ public partial class TerrainGen : MeshInstance3D
 	{
 		if(update)
 		{
-			FjerneTræer();
+			FjernTræer();
 			Generate_Terrain();
 			update = false;
 		}
@@ -136,6 +167,7 @@ public partial class TerrainGen : MeshInstance3D
 	{	
 		// Laver Image til farver (Bruges til texture)
 		Image image = Image.Create(xSize, zSize, false, Image.Format.Rgb8);
+
 
 		// Udregner højde for skift mellem biomer
 		MAXLEVEL = MULTIPLIER;
@@ -172,8 +204,8 @@ public partial class TerrainGen : MeshInstance3D
 			for(int x = 0; x < xSize+1; x++)
 			{
 
-				// Bestemmer y-værdi ud fra Noise funktion (PT BARE BØLGER)
-				y = NoiseMAGIC(x,z, MeshSeed) * MULTIPLIER;
+				// Bestemmer y-værdi til vertex (højde) ud fra Noise (16 oktaver for masser af detaljer)
+				y = NoiseMAGIC(x,z, MeshSeed, 16) * MULTIPLIER;
 				
 				
 				// get distance from center
@@ -215,23 +247,85 @@ public partial class TerrainGen : MeshInstance3D
 					// Load node der skal holde træer
 					træNode = GetParent().GetNode<Node3D>("TRÆER");
 					
-					// Bestemmer værdi for træ-noise
-					træNoise = NoiseMAGIC(x,z, TræNoiseSeed);
+					// Bestemmer værdi for træ-noise (2 oktaver for at få mere udlignet støj)
+					træNoise = NoiseMAGIC(x,z, TræNoiseSeed, 2);
+					
+					// Contrast
+					//træNoise *= 1.2f;
+					// Clipping using clamp function
+					//træNoise = Mathf.Clamp(træNoise, 0.0f, 1.0f);
+
+
 
 					// Placering af træer er baseret på sandsynligheder.
 					// Hvis vi modtager en støjværdi på 1 (Maksimal styrke), vil der f.eks. være 1/1 chance for at spawne et træ (100% chance)
 					// Hvis vi derimod modtager en støjværdi på 0.5, vil der være 1/2 [0,5/1] chance for at spawne et træ (50% chance)
 
+
 					// Generer tilfældigt tal mellem 0 og 1
-					float random = (float)new Random().NextDouble();
+					// Derefter anvendes en negativ aftagende eksponentialfunktion for at manipulere sandsynlighed for at spawne et træ (Densitet af træer)
+					float random = CumulativeDistribution((float)new Random().NextDouble(), distributionFaktor);
 
-					// Negativ aftagende eksponentialfunktion for at manipulere sandsynlighed for at spawne et træ (Densitet af træer)
-					random = CumulativeDistribution(random, distributionFaktor);
-					
-					// Vi tjekker om vores random værdi er højere end vores støj-værdi og om støjværdien er højere end vores threshold - Hvis det er sandt, spawnes et træ
-					if(random > træNoise && træNoise > træThreshold)
+
+					// Vi behandler generering af træer forskelligt efter hvor høj Noise-værdien er
+					// Hvis støjværdien er højere end threshold (Høj sandsynlighed for at spawne træ)
+					if(træNoise > træThreshold)
 					{
+						// Hvis random værdi er højere end støjværdi, vil træ spawne
+						if(random > træNoise){genererTræ = true;}
+						
+						// Hvis random værdi er lavere end støjværdi, spawner træet ikke
+						else{genererTræ = false;}
+					}
+					
+					// Hvis støjværdien er lavere end threshold
+					else
+					{
+						// Udregn afstand til threshold
+						float distanceToThreshold = Mathf.Abs(træNoise - træThreshold);
 
+						// Hvis afstanden til threshold er større end kantblur, spawner træet ikke
+						genererTræ = false;
+
+						// Hvis afstanden til threshold er mindre end kantblur, spawner træet med en chance baseret på afstanden
+						if(distanceToThreshold < træKantBlur)
+						{
+							// Laver vægt, baseret på afstand til threshold
+							float vægt = 1 - (distanceToThreshold/træKantBlur);
+
+							// Hvis random værdi med vægt er lavere end vægten, vil træ spawne
+							if(random < vægt){genererTræ = true;}
+						}
+
+					}
+					
+
+					// Vi tjekker om vores random værdi er højere end vores støj-værdi og om støjværdien er højere end vores threshold - Hvis det er sandt, spawnes et træ
+					if(genererTræ)
+					{
+						// Hvis træ er tæt på sten, spawner træet efter afstand til sten
+						
+						// Udregn afstand til bjerg
+						float distanceToMountain = Mathf.Abs(ROCKLEVEL - y);
+						
+						if(distanceToMountain < StenKantBlur)
+						{
+							// Laver vægt, baseret på afstand til bjerg
+							vægt = 1 - (distanceToMountain/StenKantBlur);
+							GD.Print("Distance to mountain: ", distanceToMountain);
+							GD.Print("Vægt: ", vægt);
+							GD.Print("0-1: ", distanceToMountain/MAXLEVEL);
+							GD.Print("");
+							GD.Print("");
+
+						}
+						
+
+						
+
+						// Sæt vægt
+						//vægt = 1 - (distanceToMountain/StenKantBlur);
+						
 						
 						// [----------- Laver offset for træ -----------]	
 
@@ -242,7 +336,6 @@ public partial class TerrainGen : MeshInstance3D
 
 						// [----------- Placerer Træ -----------]	
 						
-
 						// Laver træ som instans af treeScene
 						træscene NytTræ = treeScene.Instantiate() as træscene;
 
@@ -251,7 +344,6 @@ public partial class TerrainGen : MeshInstance3D
 
 						// Tilføjer træ til træNode
 						træNode.AddChild(NytTræ);
-
 					}
 
 
@@ -347,33 +439,32 @@ public partial class TerrainGen : MeshInstance3D
 
 
 	// Noise funktion (Perlin Noise), der kalder funktion fra PerlinNoise.cs og returnerer værdi mellem 0 og 1
-	public float NoiseMAGIC(float x, float y, uint[] seed)
+	public float NoiseMAGIC(float x, float y, uint[] seed, int okataver)
 	{
 		
 		// Nulstiller højde
 		float val = 0;
 
-		// Sætter frekvens og amplitude
+		// Sætter frekvens og amplitude 
 		float frequency = 1f;
 		float amplitude = 1f;
 
 		// Laver 16 oktaver/lag af perlin noise og lægger dem sammen
-		for (int i = 0; i < 16; i++)
+		for (int i = 0; i < okataver; i++)
 		{
 
 			// Kalder perlin noise funktion fra PerlinNoise.cs
 			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE, seed) * amplitude;
 
-			// Fordobler frekvens og amplitude halveres for hver oktav
+			// Fordobler frekvens og halverer amplitude for hver ny oktav
 			frequency *= 2;
 			amplitude /= 2;
 		}
 
 
-
 		// Contrast
 		val *= 1.2f;
-		// Clipping using th function
+		// Clipping using clamp function
 		val = Mathf.Clamp(val, -1.0f, 1.0f);
 
 		// map value to 0.0-1.0 manually
@@ -385,7 +476,7 @@ public partial class TerrainGen : MeshInstance3D
 
 
 	// Fjerner træer når der genereres nyt terrain
-	public void FjerneTræer()
+	public void FjernTræer()
 	{
 		// Går igennem alle 'børn' under TRÆER og fjerner dem
 		foreach (Node child in GetParent().GetNode<Node3D>("TRÆER").GetChildren())
@@ -402,10 +493,10 @@ public partial class TerrainGen : MeshInstance3D
 		float x2 = (float)(1 - Mathf.Pow(e, -y * x))/(1 - Mathf.Pow(e, -y));
 
 		// Printer værdier (Max 10 gange)
-		if(TestCumulativeDistributionCounter < 10)
+		if(TestCounter1 < 10)
 		{
-			GD.Print(TestCumulativeDistributionCounter,": CumulativeDistribution før: ",x, "   -   efter: ", x2);
-			TestCumulativeDistributionCounter += 1;
+			GD.Print(TestCounter1,": CumulativeDistribution før: ",x, "   -   efter: ", x2);
+			TestCounter1 += 1;
 		}
 		
 		return x2;
