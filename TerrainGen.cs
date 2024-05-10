@@ -36,10 +36,6 @@ public partial class TerrainGen : MeshInstance3D
 
 	public float ROCKLEVEL;
 
-	public float SNOWLEVEL;
-
-	public float MAXLEVEL;
-
 	public float y;
 
 	public int vert;
@@ -100,9 +96,6 @@ public partial class TerrainGen : MeshInstance3D
 	[Export]
 	public float distributionFaktor = 2.0f;
 
-	// Laver variabel til at bestemme generation case af træer
-	public int GenerationCase;
-
 	// Laver variabel til at bestemme om træer skal genereres
 	public bool genererTræ;
 
@@ -115,33 +108,11 @@ public partial class TerrainGen : MeshInstance3D
 	public float StenKantBlur = 0.15f;
 	public float distanceToMountain;
 
-
 	// Vægt til afstandsberegning
 	public float vægt;
 
-	
-	
-	// Eulers tal
+	// Eulers tal til brug i CumulativeDistribution
 	public float e = 2.71828f;
-
-
-	
-	
-	
-	
-	
-	// Test variabler
-	public int TestCounter1 = 0;
-	public int TestCounter2 = 100;
-	public int TestCounter3 = 100;
-	public int TestCounter4 = 100000;
-
-	public float TestValue1 = 0.2f;
-
-	public bool TestBool = true;
-
-
-
 
 
 
@@ -170,24 +141,11 @@ public partial class TerrainGen : MeshInstance3D
 		// Laver Image til farver (Bruges til texture)
 		Image image = Image.Create(xSize, zSize, false, Image.Format.Rgb8);
 
-
 		// Udregner højde for skift mellem biomer
-		MAXLEVEL = MULTIPLIER;
-		SANDLEVEL = (MAXLEVEL-SURFACELEVEL)*0.03f + SURFACELEVEL;
-		GRASSLEVEL = (MAXLEVEL-SURFACELEVEL)*0.2f + SURFACELEVEL;
-		ROCKLEVEL = (MAXLEVEL-SURFACELEVEL)*0.6f + SURFACELEVEL;
-		SNOWLEVEL = (MAXLEVEL-SURFACELEVEL)*0.8f + SURFACELEVEL;
+		SANDLEVEL = (MULTIPLIER-SURFACELEVEL)*0.03f + SURFACELEVEL;
+		GRASSLEVEL = (MULTIPLIER-SURFACELEVEL)*0.2f + SURFACELEVEL;
+		ROCKLEVEL = (MULTIPLIER-SURFACELEVEL)*0.6f + SURFACELEVEL;
 
-
-		// PRINTING LEVELS
-		GD.Print("SURFACELEVEL: ", Mathf.Round(SURFACELEVEL));
-		GD.Print("SANDLEVEL: ", Mathf.Round(SANDLEVEL));
-		GD.Print("GRASSLEVEL: ", Mathf.Round(GRASSLEVEL));
-		GD.Print("ROCKLEVEL: ", Mathf.Round(ROCKLEVEL));
-		GD.Print("SNOWLEVEL: ", Mathf.Round(SNOWLEVEL));
-		GD.Print("MAXLEVEL: ", Mathf.Round(MAXLEVEL));
-
-		
 		// Laver Arraymesh og Surfacetool til generering af mesh
 		ArrayMesh a_mesh = new ArrayMesh();
 		SurfaceTool st = new SurfaceTool();
@@ -209,34 +167,24 @@ public partial class TerrainGen : MeshInstance3D
 				// Bestemmer y-værdi til vertex (højde) ud fra Noise (16 oktaver for masser af detaljer)
 				y = NoiseMAGIC(x,z, MeshSeed, 16) * MULTIPLIER;
 				
-				
-				// get distance from center
-				//float distanceToMiddle = Mathf.Sqrt(Mathf.Pow(x - xSize / 2, 2) + Mathf.Pow(z - zSize / 2, 2));
-				// set y value to be higher in the middle
-				//y += centerMultiplier * Mathf.Pow(1 - Mathf.Clamp(distanceToMiddle / (xSize / 2), 0, 1), 2);
-				
-
 				// BESTEMMER BIOME
 				if (y <= SURFACELEVEL)
 				{	
-					// VERTEX IS WATER
 					// FLOOR SURFACE VALUE
 					y = SURFACELEVEL;
 
-					// SET COLOR TO BLUE
+					// VERTEX IS WATER - SET COLOR TO BLUE
 					image.SetPixel(x, z, new Color(0.0f, 0.0f, 1.0f, 1.0f));
 				}
 
-				if (y <= SANDLEVEL && y > SURFACELEVEL)
-				{
-					// VERTEX IS SAND
-					// SET COLOR TO YELLOW
-					image.SetPixel(x, z, new Color(1.0f, 1.0f, 0.0f, 1.0f));
-				}
+				if (y <= SANDLEVEL && y > SURFACELEVEL){image.SetPixel(x, z, new Color(1.0f, 1.0f, 0.0f, 1.0f));} // VERTEX IS SAND - SET COLOR TO YELLOW
 
-				if (y <= GRASSLEVEL && y > SANDLEVEL)
+				if (y <= ROCKLEVEL && y > GRASSLEVEL){image.SetPixel(x, z, new Color(0.5f, 0.5f, 0.5f, 1.0f));} // VERTEX IS ROCK - SET COLOR TO GREY
+
+				if (y > ROCKLEVEL){image.SetPixel(x, z, new Color(1.0f, 1.0f, 1.0f, 1.0f));} // VERTEX IS SNOW - SET COLOR TO WHITE
+
+				if (y <= GRASSLEVEL && y > SANDLEVEL) // VERTEX IS GRASS (Her skal der genereres træer)
 				{
-					// VERTEX IS GRASS
 					// SET COLOR TO GREEN
 					image.SetPixel(x, z, new Color(0.0f, 1.0f, 0.0f, 1.0f));
 
@@ -249,16 +197,10 @@ public partial class TerrainGen : MeshInstance3D
 					// Load node der skal holde træer
 					træNode = GetParent().GetNode<Node3D>("TRÆER");
 					
-					// Bestemmer værdi for træ-noise (2 oktaver for at få mere udlignet støj)
+					// Bestemmer værdi for træ-noise (2 oktaver for at få mere simpel/udlignet støj)
 					træNoise = NoiseMAGIC(x,z, TræNoiseSeed, 2);
 					
-					// Placering af træer er baseret på sandsynligheder.
-					// Hvis vi modtager en støjværdi på 1 (Maksimal styrke), vil der f.eks. være 1/1 chance for at spawne et træ (100% chance)
-					// Hvis vi derimod modtager en støjværdi på 0.5, vil der være 1/2 [0,5/1] chance for at spawne et træ (50% chance)
-
-
-					// Generer tilfældigt tal mellem 0 og 1
-					// Derefter anvendes en negativ aftagende eksponentialfunktion for at manipulere sandsynlighed for at spawne et træ (Densitet af træer)
+					// Generer tilfældigt tal mellem 0 og 1 og anvend negativ aftagende eksponentialfunktion  - manipulerer densitet af "skove"
 					float random = CumulativeDistribution((float)new Random().NextDouble(), distributionFaktor);
 
 
@@ -287,17 +229,11 @@ public partial class TerrainGen : MeshInstance3D
 						// Finder afstand til threshold (mellem 0 og 1)
 						kantAfstand = Math.Abs(træNoise - træThreshold);
 
-						// Print værdier
-						GD.Print("Afstand: ", kantAfstand);
-
 						// Hvis afstand til threshold er mindre end kantblur, ændres chance efter afstand
 						if(kantAfstand < træKantBlur)
 						{
 							// Laver vægt, baseret på afstand til threshold
 							vægt = 1 - (kantAfstand/træKantBlur);
-
-							// Print værdier
-							GD.Print("Afstand: ",kantAfstand,"  -  Vægt: ",vægt);
 
 							// Hvis random vægtet værdi er lavere end Noise, vil træ ikke spawne alligevel
 							if(random*vægt > træNoise){genererTræ = false;}
@@ -306,7 +242,7 @@ public partial class TerrainGen : MeshInstance3D
 					}
 					
 
-					// Hvis træ skal genereres, tjekker vi om træet er tæt på en sten-laget (Græs til sten overgang)
+					// Hvis træ skal genereres, tjekker vi om træet er tæt på sten-laget (Græs til sten overgang) og gør kanten blødere efter StenKantBlur
 					if(genererTræ)
 					{
 						// Finder afstand til stenkant (mellem 0 og 1)
@@ -318,9 +254,6 @@ public partial class TerrainGen : MeshInstance3D
 							// Laver vægt, baseret på afstand til bjerg
 							vægt = 1 - (distanceToMountain/StenKantBlur);
 
-							// Print værdier
-							//GD.Print("Afstand: ",distanceToMountain,"  -  Vægt: ",vægt);
-
 							// Hvis random vægtet værdi er lavere end Noise, vil træ ikke spawne alligevel
 							if(random*vægt > træNoise){genererTræ = false;}
 
@@ -329,14 +262,14 @@ public partial class TerrainGen : MeshInstance3D
 
 					
 
-					// [----------- Laver offset for træ -----------]	
+					// [----------- TRÆER GENERERES -----------]	
 					if(genererTræ)
 					{
 						// Bestemmer random x og z-akse offsets for træ
 						xOffset = (float)new Random().NextDouble()*maxTræOffset;
 						zOffset = (float)new Random().NextDouble()*maxTræOffset;
 
-						// Få ny y-værdi for træ fra samme Noise funktion, men med offset
+						// Får ny y-værdi for træ fra samme Noise funktion, men med offset
 						float y2 = NoiseMAGIC(x+xOffset,z+zOffset, MeshSeed, 16) * MULTIPLIER;
 
 
@@ -352,32 +285,7 @@ public partial class TerrainGen : MeshInstance3D
 						træNode.AddChild(NytTræ);
 					}
 		
-
-
 				}
-
-				if (y <= ROCKLEVEL && y > GRASSLEVEL)
-				{
-					// VERTEX IS ROCK
-					// SET COLOR TO GREY
-					image.SetPixel(x, z, new Color(0.5f, 0.5f, 0.5f, 1.0f));
-				}
-
-				if (y <= SNOWLEVEL && y > ROCKLEVEL)
-				{
-					// VERTEX IS SNOW
-					// SET COLOR TO WHITE
-					image.SetPixel(x, z, new Color(1.0f, 1.0f, 1.0f, 1.0f));
-				}
-
-				if (y > SNOWLEVEL)
-				{
-					// VERTEX IS MOUNTAIN
-					// SET COLOR TO White
-					image.SetPixel(x, z, new Color(1.0f, 1.0f, 1.0f, 1.0f));
-				}
-
-				
 
 				// Laver UV data for dette punkt
 				uv = new Vector2(Mathf.InverseLerp(0, xSize, x),Mathf.InverseLerp(0, zSize, z));
@@ -390,7 +298,7 @@ public partial class TerrainGen : MeshInstance3D
 
 		}
 
-		// GEM BILLEDE SOM PNG (KUN FOR TEST)
+		// GEM FARVE-BILLEDE SOM PNG (TIL RAPPORT)
 		image.SavePng("res://terrainImage.png");
 
 
@@ -448,7 +356,6 @@ public partial class TerrainGen : MeshInstance3D
 	// Noise funktion (Perlin Noise), der kalder funktion fra PerlinNoise.cs og returnerer værdi mellem 0 og 1
 	public float NoiseMAGIC(float x, float y, uint[] seed, int okataver)
 	{
-		
 		// Nulstiller højde
 		float val = 0;
 
@@ -459,7 +366,6 @@ public partial class TerrainGen : MeshInstance3D
 		// Laver 16 oktaver/lag af perlin noise og lægger dem sammen
 		for (int i = 0; i < okataver; i++)
 		{
-
 			// Kalder perlin noise funktion fra PerlinNoise.cs
 			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE, seed) * amplitude;
 
@@ -496,23 +402,9 @@ public partial class TerrainGen : MeshInstance3D
 	// Negativ aftagende eksponentialfunktion for at manipulere sandsynlighed for at spawne et træ
 	public float CumulativeDistribution(float x, float y)
 	{	
-		// Funktion
-		float x2 = (float)(1 - Mathf.Pow(e, -y * x))/(1 - Mathf.Pow(e, -y));
-
-		// Printer værdier (Max 10 gange)
-		if(TestCounter1 < 10)
-		{
-			GD.Print(TestCounter1,": CumulativeDistribution før: ",x, "   -   efter: ", x2);
-			TestCounter1 += 1;
-		}
-		
-		return x2;
-		
+		// Funktion / ligning: (1 - e^(-y*x))/(1 - e^(-y))
+		return(float)(1 - Mathf.Pow(e, -y * x))/(1 - Mathf.Pow(e, -y));
 	}
-
-
-
-
 
 
 }
