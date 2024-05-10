@@ -49,7 +49,7 @@ namespace PerlinNoiseImage
 
 		  			for (int i = 0; i < 16; i++)
 		  			{
-		  			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE, seeds) * amplitude;
+		  			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE) * amplitude;
  
 		  			frequency *= 2;
 		  			amplitude /= 2;
@@ -69,37 +69,6 @@ namespace PerlinNoiseImage
 				}
 			}
 			image.SavePng("res://perlinNoiseImage.png");
-		}
-
-		public static void perlinNoiseTest( uint[] seeds){
-
-			for (int x = 0; x < sizeX; x++)
-			{
-				for (int y = 0; y < sizeY; y++)
-				{
-					int index = (y * sizeX + x) * 4;
-
-
-					float val = 0;
-
-
-
-					val += perlinNoise._perlinNoise(x + 0.5f, y + 0.5f, seeds);
-
-
-
-
-					// Contrast
-
-					// Clipping
-
-					
-
-					// Convert 1 to -1 into 255 to 0
-					GD.Print(" : x : " + (float)x + " : y : " + (float)y  + " : val : " + (float)val);
-
-				}
-			}
 		}
 	}
 }

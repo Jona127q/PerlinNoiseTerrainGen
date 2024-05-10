@@ -30,6 +30,8 @@ public partial class TerrainGen : MeshInstance3D
 	[Export]
 	public float SURFACELEVEL = 100.0f;
 
+	[Export]
+	public string seed = "schmungus";
 	public float SANDLEVEL;
 
 	public float GRASSLEVEL;
@@ -106,6 +108,7 @@ public partial class TerrainGen : MeshInstance3D
 		if(update)
 		{
 			FjernTræer();
+			perlinNoise.newSeed(seed);
 			Generate_Terrain();
 			update = false;
 		}
