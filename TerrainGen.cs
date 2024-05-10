@@ -13,22 +13,22 @@ public partial class TerrainGen : MeshInstance3D
 	public bool update = false;
 
 	[Export]
-	public int xSize = 20;
+	public int xSize = 500;
 
 	[Export]
-	public int zSize = 20;
+	public int zSize = 500;
 
 	[Export]
 	public int GRID_SIZE = 400;
 
 	[Export]
-	public float MULTIPLIER = 1.0f;
+	public float MULTIPLIER = 400.0f;
 
 	[Export]
 	public float vertDistance = 1.0f;
 
 	[Export]
-	public float SURFACELEVEL = 0.0f;
+	public float SURFACELEVEL = 100.0f;
 
 	public float SANDLEVEL;
 
@@ -84,7 +84,7 @@ public partial class TerrainGen : MeshInstance3D
 
 	// laver mindsteværdi for træ-noise før træ bliver spawnet (Mellem 0 og 1)
 	[Export]
-	public float træThreshold = 0.35f;
+	public float træThreshold = 0.37f;
 
 	// Laver noise variabler til x og y-offset for træ
 	public float xOffset;
@@ -92,7 +92,7 @@ public partial class TerrainGen : MeshInstance3D
 	
 	// Laver Max værdi for x og z-offset for træ
 	[Export]
-	public float maxTræOffset = 0.5f;
+	public float maxTræOffset = 0.4f;
 
 	public Node3D træNode;
 
@@ -108,7 +108,7 @@ public partial class TerrainGen : MeshInstance3D
 
 	// Laver variabel til at bestemme kantblur for træer
 	[Export]
-	public float træKantBlur = 0.02f;
+	public float træKantBlur = 0.05f;
 
 	// Laver variabel til at bestemme blur mellem græs og træ
 	[Export]
@@ -336,6 +336,9 @@ public partial class TerrainGen : MeshInstance3D
 						xOffset = (float)new Random().NextDouble()*maxTræOffset;
 						zOffset = (float)new Random().NextDouble()*maxTræOffset;
 
+						// Få ny y-værdi for træ fra samme Noise funktion, men med offset
+						float y2 = NoiseMAGIC(x+xOffset,z+zOffset, MeshSeed, 16) * MULTIPLIER;
+
 
 						// [----------- Placerer Træ -----------]	
 						
@@ -343,7 +346,7 @@ public partial class TerrainGen : MeshInstance3D
 						træscene NytTræ = treeScene.Instantiate() as træscene;
 
 						// Sætter position for træ
-						NytTræ.Position = new Vector3(x+xOffset, y, z+zOffset);
+						NytTræ.Position = new Vector3(x+xOffset, y2, z+zOffset);
 
 						// Tilføjer træ til træNode
 						træNode.AddChild(NytTræ);
