@@ -42,34 +42,10 @@ public partial class TerrainGen : MeshInstance3D
 	public Vector2 uv;
 	public float kantAfstand;
 
-	public uint[] MeshSeed = new uint[]
-	{
-		328415744,
-		191152071,
-		204841932
-	};
-
-	public uint[] TræNoiseSeed = new uint[]
-	{
-		819465230,
-		357921046,
-		625049183
-	};
-
-	public uint[] xOffsetSeed = new uint[]
-	{
-		542038179,
-		375612890,
-		908123746
-	};
-
-	public uint[] zOffsetSeed = new uint[]
-	{
-		148932057,
-		295684173,
-		632019784
-	};
-
+	public string MeshSeed = "MeshSeed"; 
+	public string TræNoiseSeed = "TræNoiseSeed"
+	public string xOffsetSeed = "xOffsetSeed";
+	public string zOffsetSeed = "zOffsetSeed";
 
 
 	// Træ-scene
@@ -166,7 +142,7 @@ public partial class TerrainGen : MeshInstance3D
 			{
 
 				// Bestemmer y-værdi til vertex (højde) ud fra Noise (16 oktaver for masser af detaljer)
-				y = NoiseMAGIC(x,z, MeshSeed, 16) * MULTIPLIER;
+				y = NoiseMAGIC(x,z, 16) * MULTIPLIER;
 				
 				// BESTEMMER BIOME
 				if (y <= SURFACELEVEL)
@@ -199,7 +175,7 @@ public partial class TerrainGen : MeshInstance3D
 					træNode = GetParent().GetNode<Node3D>("TRÆER");
 					
 					// Bestemmer værdi for træ-noise (2 oktaver for at få mere simpel/udlignet støj)
-					træNoise = NoiseMAGIC(x,z, TræNoiseSeed, 2);
+					træNoise = NoiseMAGIC(x,z, 2);
 					
 					// Generer tilfældigt tal mellem 0 og 1 og anvend negativ aftagende eksponentialfunktion  - manipulerer densitet af "skove"
 					float random = CumulativeDistribution((float)new Random().NextDouble(), distributionFaktor);
@@ -278,7 +254,7 @@ public partial class TerrainGen : MeshInstance3D
 						zOffset = (float)new Random().NextDouble()*maxTræOffset;
 
 						// Får ny y-værdi for træ fra samme Noise funktion, men med offset
-						float y2 = NoiseMAGIC(x+xOffset,z+zOffset, MeshSeed, 16) * MULTIPLIER;
+						float y2 = NoiseMAGIC(x+xOffset,z+zOffset, 16) * MULTIPLIER;
 
 
 						// [----------- Placerer Træ -----------]	
@@ -362,7 +338,7 @@ public partial class TerrainGen : MeshInstance3D
 
 
 	// Noise funktion (Perlin Noise), der kalder funktion fra PerlinNoise.cs og returnerer værdi mellem 0 og 1
-	public float NoiseMAGIC(float x, float y, uint[] seed, int okataver)
+	public float NoiseMAGIC(float x, float y, int okataver)
 	{
 		// Nulstiller højde
 		float val = 0;
@@ -375,7 +351,7 @@ public partial class TerrainGen : MeshInstance3D
 		for (int i = 0; i < okataver; i++)
 		{
 			// Kalder perlin noise funktion fra PerlinNoise.cs
-			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE, seed) * amplitude;
+			val += perlinNoise._perlinNoise(x * frequency / GRID_SIZE, y * frequency / GRID_SIZE) * amplitude;
 
 			// Fordobler frekvens og halverer amplitude for hver ny oktav
 			frequency *= 2;
