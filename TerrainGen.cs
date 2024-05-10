@@ -105,8 +105,9 @@ public partial class TerrainGen : MeshInstance3D
 
 	// Laver variabel til at bestemme blur mellem græs og træ
 	[Export]
-	public float StenKantBlur = 0.15f;
+	public float BiomeKantBlur = 0.15f;
 	public float distanceToMountain;
+	public float distanceToSand;
 
 	// Vægt til afstandsberegning
 	public float vægt;
@@ -242,22 +243,29 @@ public partial class TerrainGen : MeshInstance3D
 					}
 					
 
-					// Hvis træ skal genereres, tjekker vi om træet er tæt på sten-laget (Græs til sten overgang) og gør kanten blødere efter StenKantBlur
+					// Hvis træ skal genereres, tjekker vi om træet er tæt på sten- eller sand-laget og gør kanten blødere efter BiomeKantBlur
 					if(genererTræ)
 					{
 						// Finder afstand til stenkant (mellem 0 og 1)
 						distanceToMountain = (GRASSLEVEL - y)/GRASSLEVEL;
 
-						// Hvis afstand til bjerg er mindre end kantblur, ændres chance efter afstand
-						if(distanceToMountain < StenKantBlur)
-						{
-							// Laver vægt, baseret på afstand til bjerg
-							vægt = 1 - (distanceToMountain/StenKantBlur);
+						// Finder afstand til sandkant (mellem 0 og 1)
+						distanceToSand = (y-SANDLEVEL)/SANDLEVEL;
+						
+						GD.Print("Y: ", y, "  -  Distance to Sand: ", distanceToSand, "  [Sand Level: ", SANDLEVEL, "]");
 
-							// Hvis random vægtet værdi er lavere end Noise, vil træ ikke spawne alligevel
-							if(random*vægt > træNoise){genererTræ = false;}
+						// Sætter vægt til
+						vægt = 0;
 
-						}
+						// Hvis afstand til bjerg er mindre end kantblur, ændres chance efter afstand - Gør vægt eksponentielt aftagende
+						if(distanceToMountain < BiomeKantBlur){CumulativeDistribution(vægt = 1 - (distanceToMountain/BiomeKantBlur), 3);} // Laver vægt, baseret på afstand til bjerg
+
+						if(distanceToSand < BiomeKantBlur){CumulativeDistribution(vægt = 1 - (distanceToSand/BiomeKantBlur),3);} // Laver vægt, baseret på afstand til strand
+						
+						// Hvis random vægtet værdi er lavere end Noise, vil træ ikke spawne alligevel
+						if(random*vægt > træNoise){genererTræ = false;}
+
+						
 					}
 
 					
