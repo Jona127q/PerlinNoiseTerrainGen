@@ -111,7 +111,8 @@ public partial class TerrainGen : MeshInstance3D
 
 	// Laver variabel til at bestemme blur mellem græs og træ
 	[Export]
-	public float StenKantBlur = 0.00f;
+	public float StenKantBlur = 0.3f;
+	public float distanceToMountain;
 
 
 	// Vægt til afstandsberegning
@@ -250,13 +251,6 @@ public partial class TerrainGen : MeshInstance3D
 					// Bestemmer værdi for træ-noise (2 oktaver for at få mere udlignet støj)
 					træNoise = NoiseMAGIC(x,z, TræNoiseSeed, 2);
 					
-					// Contrast
-					//træNoise *= 1.2f;
-					// Clipping using clamp function
-					//træNoise = Mathf.Clamp(træNoise, 0.0f, 1.0f);
-
-
-
 					// Placering af træer er baseret på sandsynligheder.
 					// Hvis vi modtager en støjværdi på 1 (Maksimal styrke), vil der f.eks. være 1/1 chance for at spawne et træ (100% chance)
 					// Hvis vi derimod modtager en støjværdi på 0.5, vil der være 1/2 [0,5/1] chance for at spawne et træ (50% chance)
@@ -268,7 +262,7 @@ public partial class TerrainGen : MeshInstance3D
 
 
 					// Vi behandler generering af træer forskelligt efter hvor høj Noise-værdien er
-					// Hvis støjværdien er højere end threshold (Høj sandsynlighed for at spawne træ)
+					// Hvis støjværdien er højere end threshold:
 					if(træNoise > træThreshold)
 					{
 						// Hvis random værdi er højere end støjværdi, vil træ spawne
@@ -281,54 +275,62 @@ public partial class TerrainGen : MeshInstance3D
 					// Hvis støjværdien er lavere end threshold
 					else
 					{
-						// Udregn afstand til threshold
-						float distanceToThreshold = Mathf.Abs(træNoise - træThreshold);
-
-						// Hvis afstanden til threshold er større end kantblur, spawner træet ikke
+						// Placer ikke træ
 						genererTræ = false;
+					}
 
-						// Hvis afstanden til threshold er mindre end kantblur, spawner træet med en chance baseret på afstanden
-						if(distanceToThreshold < træKantBlur)
+					
+					// Hvis træ skal genereres, gør vi kanten blødere efter træKantBlur
+					if(genererTræ)
+					{
+						// Finder afstand til threshold (mellem 0 og 1)
+						kantAfstand = Math.Abs(træNoise - træThreshold);
+
+						// Print værdier
+						GD.Print("Afstand: ", kantAfstand);
+
+						// Hvis afstand til threshold er mindre end kantblur, ændres chance efter afstand
+						if(kantAfstand < træKantBlur)
 						{
 							// Laver vægt, baseret på afstand til threshold
-							float vægt = 1 - (distanceToThreshold/træKantBlur);
+							vægt = 1 - (kantAfstand/træKantBlur);
 
-							// Hvis random værdi med vægt er lavere end vægten, vil træ spawne
-							if(random < vægt){genererTræ = true;}
+							// Print værdier
+							GD.Print("Afstand: ",kantAfstand,"  -  Vægt: ",vægt);
+
+							// Hvis random vægtet værdi er lavere end Noise, vil træ ikke spawne alligevel
+							if(random*vægt > træNoise){genererTræ = false;}
+
 						}
-
 					}
 					
 
-					// Vi tjekker om vores random værdi er højere end vores støj-værdi og om støjværdien er højere end vores threshold - Hvis det er sandt, spawnes et træ
+					// Hvis træ skal genereres, tjekker vi om træet er tæt på en sten-laget (Græs til sten overgang)
 					if(genererTræ)
 					{
-						// Hvis træ er tæt på sten, spawner træet efter afstand til sten
-						
-						// Udregn afstand til bjerg
-						float distanceToMountain = Mathf.Abs(ROCKLEVEL - y);
-						
+						// Finder afstand til stenkant (mellem 0 og 1)
+						distanceToMountain = (GRASSLEVEL - y)/GRASSLEVEL;
+
+						// Hvis afstand til bjerg er mindre end kantblur, ændres chance efter afstand
 						if(distanceToMountain < StenKantBlur)
 						{
 							// Laver vægt, baseret på afstand til bjerg
 							vægt = 1 - (distanceToMountain/StenKantBlur);
-							GD.Print("Distance to mountain: ", distanceToMountain);
-							GD.Print("Vægt: ", vægt);
-							GD.Print("0-1: ", distanceToMountain/MAXLEVEL);
-							GD.Print("");
-							GD.Print("");
+
+							// Print værdier
+							//GD.Print("Afstand: ",distanceToMountain,"  -  Vægt: ",vægt);
+
+							// Hvis random vægtet værdi er lavere end Noise, vil træ ikke spawne alligevel
+							if(random*vægt > træNoise){genererTræ = false;}
 
 						}
-						
+					}
 
-						
+					
 
-						// Sæt vægt
-						//vægt = 1 - (distanceToMountain/StenKantBlur);
-						
-						
-						// [----------- Laver offset for træ -----------]	
-
+					// [----------- Laver offset for træ -----------]	
+					if(genererTræ)
+					{
 						// Bestemmer random x og z-akse offsets for træ
 						xOffset = (float)new Random().NextDouble()*maxTræOffset;
 						zOffset = (float)new Random().NextDouble()*maxTræOffset;
@@ -345,6 +347,7 @@ public partial class TerrainGen : MeshInstance3D
 						// Tilføjer træ til træNode
 						træNode.AddChild(NytTræ);
 					}
+		
 
 
 				}

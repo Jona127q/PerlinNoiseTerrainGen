@@ -25,7 +25,8 @@ SURFACELEVEL = 100.0
 "træThreshold" = 0.45
 "maxTræOffset" = 0.5
 distributionFaktor = 2.0
-"træKantBlur" = 0.0
+"træKantBlur" = 0.1
+StenKantBlur = 0.1
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.863096, 0.311302, -0.397689, 0, 0.787441, 0.61639, 0.50504, -0.532004, 0.679637, -9.39009, -4.28721, 0)
