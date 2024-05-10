@@ -84,20 +84,21 @@ public partial class TerrainGen : MeshInstance3D
 
 	// laver mindsteværdi for træ-noise før træ bliver spawnet (Mellem 0 og 1)
 	[Export]
-	public float træThreshold = 0.2f;
+	public float træThreshold = 0.35f;
 
 	// Laver noise variabler til x og y-offset for træ
 	public float xOffset;
 	public float zOffset;
+	
 	// Laver Max værdi for x og z-offset for træ
 	[Export]
-	public float maxTræOffset = 0.1f;
+	public float maxTræOffset = 0.5f;
 
 	public Node3D træNode;
 
 	// Laver distribution faktor for træer
 	[Export]
-	public float distributionFaktor = 2.5f;
+	public float distributionFaktor = 2.0f;
 
 	// Laver variabel til at bestemme generation case af træer
 	public int GenerationCase;
@@ -107,11 +108,11 @@ public partial class TerrainGen : MeshInstance3D
 
 	// Laver variabel til at bestemme kantblur for træer
 	[Export]
-	public float træKantBlur = 0.07f;
+	public float træKantBlur = 0.02f;
 
 	// Laver variabel til at bestemme blur mellem græs og træ
 	[Export]
-	public float StenKantBlur = 0.3f;
+	public float StenKantBlur = 0.15f;
 	public float distanceToMountain;
 
 
