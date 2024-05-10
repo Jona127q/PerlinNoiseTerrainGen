@@ -24,14 +24,14 @@ public partial class TerrainGen : MeshInstance3D
 	public int GRID_SIZE = 400;
 
 	[Export]
-	public float MULTIPLIER = 300.0f;
+	public float MULTIPLIER = 400.0f;
 
 	[Export]
 	public float standardvertDistance = 1.0f;
 	public float vertDistance;
 
 	[Export]
-	public float waterLevel = 100.0f;
+	public float waterLevel = 150.0f;
 
 	[Export]
 	public string seed = "schmungus";
@@ -57,7 +57,7 @@ public partial class TerrainGen : MeshInstance3D
 
 	// laver mindsteværdi for træ-noise før træ bliver spawnet (Mellem 0 og 1)
 	[Export]
-	public float træThreshold = 0.37f;
+	public float træThreshold = 0.35f;
 
 	// Laver noise variabler til x og y-offset for træ
 	public float xOffset;
@@ -65,24 +65,24 @@ public partial class TerrainGen : MeshInstance3D
 	
 	// Laver Max værdi for x og z-offset for træ
 	[Export]
-	public float maxTræOffset = 0.4f;
+	public float maxTræOffset = 0.45f;
 
-	public Node3D træNode;
+	public Node træNode;
 
 	// Laver distribution faktor for træer
 	[Export]
-	public float distributionFaktor = 2.0f;
+	public float distributionFaktor = 3.0f;
 
 	// Laver variabel til at bestemme om træer skal genereres
 	public bool genererTræ;
 
 	// Laver variabel til at bestemme kantblur for træer
 	[Export]
-	public float træKantBlur = 0.05f;
+	public float træKantBlur = 0.2f;
 
 	// Laver variabel til at bestemme blur mellem græs og træ
 	[Export]
-	public float BiomeKantBlur = 0.15f;
+	public float BiomeKantBlur = 0.2f;
 	public float distanceToMountain;
 	public float distanceToSand;
 
@@ -97,15 +97,15 @@ public partial class TerrainGen : MeshInstance3D
 	public int resolution = 1;
 
 
+	// Seed til testværdi
+	public int Testværdi = 10000;
+
 
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		// Manipuler detaljeringsgraden af terrain
-		xSize = StandardxSize/resolution;
-		zSize = StandardzSize/resolution;
-		vertDistance = standardvertDistance*resolution;
+		update = true;
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -113,17 +113,40 @@ public partial class TerrainGen : MeshInstance3D
 	{
 		if(update)
 		{
+			update = false;
+
+			// Loader træ-scene
+			treeScene = GD.Load<PackedScene>("res://Træ/træscene.tscn");
+			GD.Print("Tree Scene Loaded");
+
+			// Load node der skal holde træer
+			try
+			{
+				træNode = GetParent().GetNode<Node3D>("TRÆER");
+				GD.Print("TræNode loaded");
+			}
+			catch
+			{
+				GD.Print("TræNode not found");
+			}
+
+			// Fjern eksisterende træer
 			FjernTræer();
+			GD.Print("Træer fjernet");
+
+			// Sætter seed for Perlin Noise (Til Mesh)
 			perlinNoise.newSeed(seed);
-			Generate_Terrain();
-			
+			GD.Print("Seed set");
+
 			// Manipuler detaljeringsgraden af terrain
 			xSize = StandardxSize/resolution;
 			zSize = StandardzSize/resolution;
 			vertDistance = standardvertDistance*resolution;
-			
-			update = false;
+			GD.Print("Resolution set");
 
+			// Generer terrain
+			Generate_Terrain();
+			GD.Print("Terrain Generated");
 		}
 	}
 
@@ -145,17 +168,14 @@ public partial class TerrainGen : MeshInstance3D
 
 		// Starter Surfacetool
 		st.Begin(Mesh.PrimitiveType.Triangles);
-
-		// Loader træ-scene
-		treeScene = GD.Load<PackedScene>("res://Træ/træscene.tscn");
 		
 		// For hver punkt i zSize+1
 		for(int z = 0; z < zSize+1; z++)
 		{
-
 			// For hver punkt xSize+1
 			for(int x = 0; x < xSize+1; x++)
 			{
+
 				// Sætter seed
 				perlinNoise.newSeed(seed);
 
@@ -163,13 +183,15 @@ public partial class TerrainGen : MeshInstance3D
 				y = NoiseMAGIC(x*vertDistance,z*vertDistance, 16) * MULTIPLIER;
 				
 				// BESTEMMER BIOME
-				if (y <= waterLevel)
+				if (y <= waterLevel )
 				{	
 					// FLOOR SURFACE VALUE
 					y = waterLevel;
 
+
 					// VERTEX IS WATER - SET COLOR TO BLUE
 					image.SetPixel(x, z, new Color(0.0f, 0.0f, 1.0f, 1.0f));
+
 				}
 
 				if (y <= SANDLEVEL && y > waterLevel){image.SetPixel(x, z, new Color(1.0f, 1.0f, 0.0f, 1.0f));} // VERTEX IS SAND - SET COLOR TO YELLOW
@@ -184,19 +206,18 @@ public partial class TerrainGen : MeshInstance3D
 					image.SetPixel(x, z, new Color(0.0f, 1.0f, 0.0f, 1.0f));
 
 
+
 					
 					// [------------------------------------------------------------------]
 					// [------------------------- TRÆ GENERERING -------------------------]
 					// [------------------------------------------------------------------]
 					
-					// Load node der skal holde træer
-					træNode = GetParent().GetNode<Node3D>("TRÆER");
 
 					// Sætter seed for træ-noise
 					perlinNoise.newSeed(TræNoiseSeed);
 					
-					// Bestemmer værdi for træ-noise (2 oktaver for at få mere simpel/udlignet støj)
-					træNoise = NoiseMAGIC(x*vertDistance,z*vertDistance, 2);
+					// Bestemmer værdi for træ-noise (3 oktaver for at få mere simpel/udlignet støj)
+					træNoise = NoiseMAGIC(x*vertDistance,z*vertDistance, 16);
 					
 					// Generer tilfældigt tal mellem 0 og 1 og anvend negativ aftagende eksponentialfunktion  - manipulerer densitet af "skove"
 					float random = CumulativeDistribution((float)new Random().NextDouble(), distributionFaktor);
@@ -248,8 +269,6 @@ public partial class TerrainGen : MeshInstance3D
 
 						// Finder afstand til sandkant (mellem 0 og 1)
 						distanceToSand = (y-SANDLEVEL)/SANDLEVEL;
-						
-						GD.Print("Y: ", y, "  -  Distance to Sand: ", distanceToSand, "  [Sand Level: ", SANDLEVEL, "]");
 
 						// Sætter vægt til
 						vægt = 0;
@@ -265,25 +284,41 @@ public partial class TerrainGen : MeshInstance3D
 						
 					}
 
-					
+				
 
 					// [----------- TRÆER GENERERES -----------]	
 					if(genererTræ)
 					{
-						// Sætter seed for x og z-offset
-						perlinNoise.newSeed(OffsetSeed);
+						// Sætter seed for x-offset & Bestemmer random x offset for træ
+						perlinNoise.newSeed("feaugajdsnba");
+						xOffset = (NoiseMAGIC(x*10000/(z*vertDistance*distanceToMountain+10),  z*10000/(x*vertDistance*distanceToMountain+10), 16)-0.5f)*2.5f;
 
-						// Bestemmer random x og z-akse offsets for træ
-						xOffset = NoiseMAGIC(x*vertDistance,z*vertDistance, 8)*maxTræOffset;
-						zOffset = NoiseMAGIC(x*2*vertDistance,z*2*vertDistance, 8)*maxTræOffset;
 
+						// Sætter seed for z-offset & Bestemmer random z offset for træ
+						perlinNoise.newSeed("fehvfe7s83");
+						zOffset = (NoiseMAGIC(x*10000/(z*vertDistance*distanceToMountain+10),  z*10000/(x*vertDistance*distanceToMountain+10), 16)-0.5f)*2.5f;
+						
+
+						// Clamp værdier for x og z-offset
+						xOffset = Mathf.Clamp(xOffset, -1, 1)*maxTræOffset;
+						zOffset = Mathf.Clamp(zOffset, -1, 1)*maxTræOffset;
+
+						
+						Testværdi +=1;
+
+						if(Testværdi > 5000)
+						{
+							GD.Print("xOffset: " + xOffset);
+							GD.Print("zOffset: " + zOffset);
+							GD.Print("");
+							Testværdi = 0;
+						}
 
 						// Sætter seed til MeshSeed
 						perlinNoise.newSeed(seed);
 
 						// Får ny y-værdi for træ fra samme Noise funktion, men med offset
-						float y2 = NoiseMAGIC((x+xOffset)*vertDistance,(z+zOffset)*vertDistance, 16) * MULTIPLIER;
-
+						float y2 = NoiseMAGIC(x*vertDistance+xOffset,z*vertDistance+zOffset, 16) * MULTIPLIER;
 
 						// [----------- Placerer Træ -----------]	
 						
@@ -291,7 +326,7 @@ public partial class TerrainGen : MeshInstance3D
 						træscene NytTræ = treeScene.Instantiate() as træscene;
 
 						// Sætter position for træ
-						NytTræ.Position = new Vector3(x+xOffset, y2, z+zOffset);
+						NytTræ.Position = new Vector3(x*vertDistance+xOffset, y2, z*vertDistance+zOffset);
 
 						// Tilføjer træ til træNode
 						træNode.AddChild(NytTræ);
@@ -299,19 +334,24 @@ public partial class TerrainGen : MeshInstance3D
 		
 				}
 
+
 				// Laver UV data for dette punkt
 				uv = new Vector2(Mathf.InverseLerp(0, xSize, x),Mathf.InverseLerp(0, zSize, z));
 				st.SetUV(uv);
 				
 				// Tilføjer denne vertex til surfacetool
 				st.AddVertex(new Vector3(x*vertDistance, y, z*vertDistance));
+
 			}
 
 
 		}
 
+		
+
 		// GEM FARVE-BILLEDE SOM PNG (TIL RAPPORT)
 		image.SavePng("res://terrainImage.png");
+		GD.Print("Image saved");
 
 
 
@@ -343,6 +383,7 @@ public partial class TerrainGen : MeshInstance3D
 			// Gå til næste vertex
 
 		}
+
 
 		// Generer Normals ved brug af SurfaceTool
 		st.GenerateNormals();
@@ -404,7 +445,7 @@ public partial class TerrainGen : MeshInstance3D
 	public void FjernTræer()
 	{
 		// Går igennem alle 'børn' under TRÆER og fjerner dem
-		foreach (Node child in GetParent().GetNode<Node3D>("TRÆER").GetChildren())
+		foreach (Node child in træNode.GetChildren())
 		{
 			child.QueueFree();
 		}
