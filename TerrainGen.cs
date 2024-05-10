@@ -13,22 +13,25 @@ public partial class TerrainGen : MeshInstance3D
 	public bool update = false;
 
 	[Export]
-	public int xSize = 500;
+	public int StandardxSize = 500;
+	public int xSize;
 
 	[Export]
-	public int zSize = 500;
+	public int StandardzSize = 500;
+	public int zSize;
 
 	[Export]
 	public int GRID_SIZE = 400;
 
 	[Export]
-	public float MULTIPLIER = 400.0f;
+	public float MULTIPLIER = 300.0f;
 
 	[Export]
-	public float vertDistance = 1.0f;
+	public float standardvertDistance = 1.0f;
+	public float vertDistance;
 
 	[Export]
-	public float SURFACELEVEL = 100.0f;
+	public float waterLevel = 100.0f;
 
 	[Export]
 	public string seed = "schmungus";
@@ -43,12 +46,8 @@ public partial class TerrainGen : MeshInstance3D
 	public int vert;
 	public Vector2 uv;
 	public float kantAfstand;
-
-	public string MeshSeed = "MeshSeed"; 
-	public string TræNoiseSeed = "TræNoiseSeed"
-	public string xOffsetSeed = "xOffsetSeed";
-	public string zOffsetSeed = "zOffsetSeed";
-
+	public string TræNoiseSeed = "TræNoiseSeed";
+	public string OffsetSeed = "OffsetSeed";
 
 	// Træ-scene
 	PackedScene treeScene;
@@ -93,13 +92,20 @@ public partial class TerrainGen : MeshInstance3D
 	// Eulers tal til brug i CumulativeDistribution
 	public float e = 2.71828f;
 
+	// Lav resolution mindre
+	[Export]
+	public int resolution = 1;
+
 
 
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-
+		// Manipuler detaljeringsgraden af terrain
+		xSize = StandardxSize/resolution;
+		zSize = StandardzSize/resolution;
+		vertDistance = standardvertDistance*resolution;
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -110,7 +116,14 @@ public partial class TerrainGen : MeshInstance3D
 			FjernTræer();
 			perlinNoise.newSeed(seed);
 			Generate_Terrain();
+			
+			// Manipuler detaljeringsgraden af terrain
+			xSize = StandardxSize/resolution;
+			zSize = StandardzSize/resolution;
+			vertDistance = standardvertDistance*resolution;
+			
 			update = false;
+
 		}
 	}
 
@@ -122,9 +135,9 @@ public partial class TerrainGen : MeshInstance3D
 		Image image = Image.Create(xSize, zSize, false, Image.Format.Rgb8);
 
 		// Udregner højde for skift mellem biomer
-		SANDLEVEL = (MULTIPLIER-SURFACELEVEL)*0.03f + SURFACELEVEL;
-		GRASSLEVEL = (MULTIPLIER-SURFACELEVEL)*0.2f + SURFACELEVEL;
-		ROCKLEVEL = (MULTIPLIER-SURFACELEVEL)*0.6f + SURFACELEVEL;
+		SANDLEVEL = (MULTIPLIER-waterLevel)*0.03f + waterLevel;
+		GRASSLEVEL = (MULTIPLIER-waterLevel)*0.2f + waterLevel;
+		ROCKLEVEL = (MULTIPLIER-waterLevel)*0.6f + waterLevel;
 
 		// Laver Arraymesh og Surfacetool til generering af mesh
 		ArrayMesh a_mesh = new ArrayMesh();
@@ -143,21 +156,23 @@ public partial class TerrainGen : MeshInstance3D
 			// For hver punkt xSize+1
 			for(int x = 0; x < xSize+1; x++)
 			{
+				// Sætter seed
+				perlinNoise.newSeed(seed);
 
 				// Bestemmer y-værdi til vertex (højde) ud fra Noise (16 oktaver for masser af detaljer)
-				y = NoiseMAGIC(x,z, 16) * MULTIPLIER;
+				y = NoiseMAGIC(x*vertDistance,z*vertDistance, 16) * MULTIPLIER;
 				
 				// BESTEMMER BIOME
-				if (y <= SURFACELEVEL)
+				if (y <= waterLevel)
 				{	
 					// FLOOR SURFACE VALUE
-					y = SURFACELEVEL;
+					y = waterLevel;
 
 					// VERTEX IS WATER - SET COLOR TO BLUE
 					image.SetPixel(x, z, new Color(0.0f, 0.0f, 1.0f, 1.0f));
 				}
 
-				if (y <= SANDLEVEL && y > SURFACELEVEL){image.SetPixel(x, z, new Color(1.0f, 1.0f, 0.0f, 1.0f));} // VERTEX IS SAND - SET COLOR TO YELLOW
+				if (y <= SANDLEVEL && y > waterLevel){image.SetPixel(x, z, new Color(1.0f, 1.0f, 0.0f, 1.0f));} // VERTEX IS SAND - SET COLOR TO YELLOW
 
 				if (y <= ROCKLEVEL && y > GRASSLEVEL){image.SetPixel(x, z, new Color(0.5f, 0.5f, 0.5f, 1.0f));} // VERTEX IS ROCK - SET COLOR TO GREY
 
@@ -176,9 +191,12 @@ public partial class TerrainGen : MeshInstance3D
 					
 					// Load node der skal holde træer
 					træNode = GetParent().GetNode<Node3D>("TRÆER");
+
+					// Sætter seed for træ-noise
+					perlinNoise.newSeed(TræNoiseSeed);
 					
 					// Bestemmer værdi for træ-noise (2 oktaver for at få mere simpel/udlignet støj)
-					træNoise = NoiseMAGIC(x,z, 2);
+					træNoise = NoiseMAGIC(x*vertDistance,z*vertDistance, 2);
 					
 					// Generer tilfældigt tal mellem 0 og 1 og anvend negativ aftagende eksponentialfunktion  - manipulerer densitet af "skove"
 					float random = CumulativeDistribution((float)new Random().NextDouble(), distributionFaktor);
@@ -252,12 +270,19 @@ public partial class TerrainGen : MeshInstance3D
 					// [----------- TRÆER GENERERES -----------]	
 					if(genererTræ)
 					{
+						// Sætter seed for x og z-offset
+						perlinNoise.newSeed(OffsetSeed);
+
 						// Bestemmer random x og z-akse offsets for træ
-						xOffset = (float)new Random().NextDouble()*maxTræOffset;
-						zOffset = (float)new Random().NextDouble()*maxTræOffset;
+						xOffset = NoiseMAGIC(x*vertDistance,z*vertDistance, 8)*maxTræOffset;
+						zOffset = NoiseMAGIC(x*2*vertDistance,z*2*vertDistance, 8)*maxTræOffset;
+
+
+						// Sætter seed til MeshSeed
+						perlinNoise.newSeed(seed);
 
 						// Får ny y-værdi for træ fra samme Noise funktion, men med offset
-						float y2 = NoiseMAGIC(x+xOffset,z+zOffset, 16) * MULTIPLIER;
+						float y2 = NoiseMAGIC((x+xOffset)*vertDistance,(z+zOffset)*vertDistance, 16) * MULTIPLIER;
 
 
 						// [----------- Placerer Træ -----------]	
