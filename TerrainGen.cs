@@ -97,7 +97,7 @@ public partial class TerrainGen : MeshInstance3D
 	public int resolution = 1;
 
 
-	// Seed til testværdi
+	// Testværdi til debugging
 	public int Testværdi = 10000;
 
 
