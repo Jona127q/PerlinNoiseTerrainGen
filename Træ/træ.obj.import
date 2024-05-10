@@ -1,0 +1,22 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://o82jbjhdj00l"
+path="res://.godot/imported/træ.obj-f4e992dcb3997d02ac5e476426b13ca7.mesh"
+
+[deps]
+
+files=["res://.godot/imported/træ.obj-f4e992dcb3997d02ac5e476426b13ca7.mesh"]
+
+source_file="res://Træ/træ.obj"
+dest_files=["res://.godot/imported/træ.obj-f4e992dcb3997d02ac5e476426b13ca7.mesh", "res://.godot/imported/træ.obj-f4e992dcb3997d02ac5e476426b13ca7.mesh"]
+
+[params]
+
+generate_tangents=true
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+optimize_mesh=true
+force_disable_mesh_compression=false
