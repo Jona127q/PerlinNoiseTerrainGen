@@ -10,7 +10,7 @@ public partial class TerrainGen : MeshInstance3D
 {
 	// Sætter variabler
 	[Export]
-	public bool update = false;
+	public bool update = true;
 
 	[Export]
 	public int StandardxSize = 500;
@@ -97,11 +97,6 @@ public partial class TerrainGen : MeshInstance3D
 	public int resolution = 1;
 
 
-	// Called when the node enters the scene tree for the first time.
-	public override void _Ready()
-	{
-		update = true;
-	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
@@ -175,10 +170,10 @@ public partial class TerrainGen : MeshInstance3D
 		// Sætter seed
 		perlinNoise.newSeed(seed);
 		// For hver punkt i zSize+1
-		for(int z = 0; z < zSize+1; z++)
+		for(int z = 0; z < zSize; z++)
 		{
 			// For hver punkt xSize+1
-			for(int x = 0; x < xSize+1; x++)
+			for(int x = 0; x < xSize; x++)
 			{
 
 
@@ -225,7 +220,6 @@ public partial class TerrainGen : MeshInstance3D
 					// Generer tilfældigt tal mellem 0 og 1 og anvend negativ aftagende eksponentialfunktion  - manipulerer densitet af "skove"
 					float random = CumulativeDistribution((float)new Random().NextDouble(), distributionFaktor);
 
-
 					// Vi behandler generering af træer forskelligt efter hvor høj Noise-værdien er
 					// Hvis støjværdien er højere end threshold:
 					if(træNoise > træThreshold)
@@ -244,6 +238,8 @@ public partial class TerrainGen : MeshInstance3D
 						genererTræ = false;
 					}
 
+					// Hvis resolution er mindre end 1, fjerner vi træer efter resolution, da der ellers vil opstå for mange
+					if(resolution < 1 && genererTræ){if(new Random().NextDouble() > resolution){genererTræ = false;}}
 					
 					// Hvis træ skal genereres, gør vi kanten blødere efter træKantBlur
 					if(genererTræ)
@@ -349,20 +345,24 @@ public partial class TerrainGen : MeshInstance3D
 		vert = 0;
 
 		// For hver punkt i zSize
-		for(int z = 0; z < zSize; z++)
+		for(int z = 0; z < zSize-1; z++)
 		{
 			// For hver punkt i xSize
-			for(int x = 0; x < xSize; x++)
+			for(int x = 0; x < xSize-1; x++)
 			{
 				// Laver trekant 1 i urets rækkefølge
-				st.AddIndex(vert+0);
-				st.AddIndex(vert+1);
-				st.AddIndex(vert + xSize + 1);
+				st.AddIndex(vert);
+				st.AddIndex(vert + 1);
+				st.AddIndex(vert + xSize);
 
 				// Laver trekant 2 i urets rækkefølge
-				st.AddIndex(vert + xSize + 1);
+				st.AddIndex(vert + xSize);
 				st.AddIndex(vert + 1);
-				st.AddIndex(vert + xSize + 2);
+				st.AddIndex(vert + xSize + 1);
+				
+				//st.AddIndex(vert + xSize);
+				//st.AddIndex(vert + 1);
+				//st.AddIndex(vert + xSize + 2);
 
 				// Gå til næste vertex
 				vert++;
