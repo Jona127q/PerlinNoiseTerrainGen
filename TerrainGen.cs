@@ -71,7 +71,7 @@ public partial class TerrainGen : MeshInstance3D
 
 	// Laver distribution faktor for træer
 	[Export]
-	public float distributionFaktor = 3.0f;
+	public float distributionFaktor = 5.0f;
 
 	// Laver variabel til at bestemme om træer skal genereres
 	public bool genererTræ;
