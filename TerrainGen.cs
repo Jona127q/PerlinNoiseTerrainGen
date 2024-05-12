@@ -175,8 +175,6 @@ public partial class TerrainGen : MeshInstance3D
 			// For hver punkt xSize
 			for(int x = 0; x < xSize; x++)
 			{
-
-
 				// Bestemmer y-værdi til vertex (højde) ud fra Noise (16 oktaver for masser af detaljer)
 				y = NoiseMAGIC(x*vertDistance,z*vertDistance, 16) * MULTIPLIER;
 				
@@ -192,13 +190,17 @@ public partial class TerrainGen : MeshInstance3D
 
 				}
 
-				if (y <= SANDLEVEL && y > waterLevel){image.SetPixel(x, z, new Color(1.0f, 1.0f, 0.0f, 1.0f));} // VERTEX IS SAND - SET COLOR TO YELLOW
+				// VERTEX IS SAND - SET COLOR TO YELLOW
+				if (y <= SANDLEVEL && y > waterLevel){image.SetPixel(x, z, new Color(1.0f, 1.0f, 0.0f, 1.0f));}
 
-				if (y <= ROCKLEVEL && y > GRASSLEVEL){image.SetPixel(x, z, new Color(0.5f, 0.5f, 0.5f, 1.0f));} // VERTEX IS ROCK - SET COLOR TO GREY
+				// VERTEX IS ROCK - SET COLOR TO GREY
+				if (y <= ROCKLEVEL && y > GRASSLEVEL){image.SetPixel(x, z, new Color(0.5f, 0.5f, 0.5f, 1.0f));}
 
-				if (y > ROCKLEVEL){image.SetPixel(x, z, new Color(1.0f, 1.0f, 1.0f, 1.0f));} // VERTEX IS SNOW - SET COLOR TO WHITE
+				// VERTEX IS SNOW - SET COLOR TO WHITE
+				if (y > ROCKLEVEL){image.SetPixel(x, z, new Color(1.0f, 1.0f, 1.0f, 1.0f));}
 
-				if (y <= GRASSLEVEL && y > SANDLEVEL) // VERTEX IS GRASS (Her skal der genereres træer)
+				// VERTEX IS GRASS (Her skal der genereres træer)
+				if (y <= GRASSLEVEL && y > SANDLEVEL) 
 				{
 					// SET COLOR TO GREEN
 					image.SetPixel(x, z, new Color(0.0f, 1.0f, 0.0f, 1.0f));
@@ -359,18 +361,14 @@ public partial class TerrainGen : MeshInstance3D
 				st.AddIndex(vert + xSize);
 				st.AddIndex(vert + 1);
 				st.AddIndex(vert + xSize + 1);
-				
-				//st.AddIndex(vert + xSize);
-				//st.AddIndex(vert + 1);
-				//st.AddIndex(vert + xSize + 2);
 
 				// Gå til næste vertex
 				vert++;
 			}
 			vert++;
 			// Gå til næste vertex
-
 		}
+
 		// Generer Normals ved brug af SurfaceTool
 		st.GenerateNormals();
 
