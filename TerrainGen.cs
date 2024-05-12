@@ -169,10 +169,10 @@ public partial class TerrainGen : MeshInstance3D
 		
 		// Sætter seed
 		perlinNoise.newSeed(seed);
-		// For hver punkt i zSize+1
+		// For hver punkt i zSize
 		for(int z = 0; z < zSize; z++)
 		{
-			// For hver punkt xSize+1
+			// For hver punkt xSize
 			for(int x = 0; x < xSize; x++)
 			{
 
