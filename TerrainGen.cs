@@ -47,8 +47,7 @@ public partial class TerrainGen : MeshInstance3D
 	public int vert;
 	public Vector2 uv;
 	public float kantAfstand;
-	public string TræNoiseSeed = "TræNoiseSeed";
-	public string OffsetSeed = "OffsetSeed";
+
 
 	// Træ-scene
 	PackedScene treeScene;
@@ -96,11 +95,6 @@ public partial class TerrainGen : MeshInstance3D
 	// Lav resolution mindre
 	[Export]
 	public int resolution = 1;
-
-
-	// Testværdi til debugging
-	public int Testværdi = 10000;
-
 
 
 	// Called when the node enters the scene tree for the first time.
@@ -226,7 +220,7 @@ public partial class TerrainGen : MeshInstance3D
 					//perlinNoise.newSeed(seed);
 					
 					// Bestemmer værdi for træ-noise (3 oktaver for at få mere simpel/udlignet støj)
-					træNoise = NoiseMAGIC(x*vertDistance,z*vertDistance, 16);
+					træNoise = NoiseMAGIC(x*vertDistance,z*vertDistance+zSize*vertDistance*2, 16);
 					
 					// Generer tilfældigt tal mellem 0 og 1 og anvend negativ aftagende eksponentialfunktion  - manipulerer densitet af "skove"
 					float random = CumulativeDistribution((float)new Random().NextDouble(), distributionFaktor);
@@ -300,28 +294,18 @@ public partial class TerrainGen : MeshInstance3D
 					{
 						// Sætter seed for x-offset & Bestemmer random x offset for træ
 						//perlinNoise.newSeed("feaugajdsnba");
-						xOffset = (NoiseMAGIC(x*10000/(z*vertDistance*distanceToMountain+10),  z*10000/(x*vertDistance*distanceToMountain+10), 16)-0.5f)*2.5f;
+						xOffset = (NoiseMAGIC(x*10000/(z*vertDistance*distanceToMountain+10)+xSize*vertDistance*2,  z*10000/(x*vertDistance*distanceToMountain+10), 16)-0.5f)*2.5f;
 
 
 						// Sætter seed for z-offset & Bestemmer random z offset for træ
 						//perlinNoise.newSeed("fehvfe7s83");
-						zOffset = (NoiseMAGIC(x*10000/(z*vertDistance*distanceToMountain+10),  z*10000/(x*vertDistance*distanceToMountain+10), 16)-0.5f)*2.5f;
+						zOffset = (NoiseMAGIC(x*10000/(z*vertDistance*distanceToMountain+10)+xSize*vertDistance*3,  z*10000/(x*vertDistance*distanceToMountain+10), 16)-0.5f)*2.5f;
 						
 
 						// Clamp værdier for x og z-offset
 						xOffset = Mathf.Clamp(xOffset, -1, 1)*maxTræOffset;
 						zOffset = Mathf.Clamp(zOffset, -1, 1)*maxTræOffset;
 
-						
-						Testværdi +=1;
-
-						if(Testværdi > 5000)
-						{
-							GD.Print("xOffset: " + xOffset);
-							GD.Print("zOffset: " + zOffset);
-							GD.Print("");
-							Testværdi = 0;
-						}
 
 						// Får ny y-værdi for træ fra samme Noise funktion, men med offset
 						float y2 = NoiseMAGIC(x*vertDistance+xOffset,z*vertDistance+zOffset, 16) * MULTIPLIER;
