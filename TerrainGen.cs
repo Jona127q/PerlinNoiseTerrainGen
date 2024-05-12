@@ -10,7 +10,7 @@ public partial class TerrainGen : MeshInstance3D
 {
 	// Sætter variabler
 	[Export]
-	public bool update = false;
+	public bool update = true;
 
 	[Export]
 	public int StandardxSize = 500;
@@ -47,8 +47,7 @@ public partial class TerrainGen : MeshInstance3D
 	public int vert;
 	public Vector2 uv;
 	public float kantAfstand;
-	public string TræNoiseSeed = "TræNoiseSeed";
-	public string OffsetSeed = "OffsetSeed";
+
 
 	// Træ-scene
 	PackedScene treeScene;
@@ -98,16 +97,6 @@ public partial class TerrainGen : MeshInstance3D
 	public int resolution = 1;
 
 
-	// Testværdi til debugging
-	public int Testværdi = 10000;
-
-
-
-	// Called when the node enters the scene tree for the first time.
-	public override void _Ready()
-	{
-		update = true;
-	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
@@ -180,14 +169,12 @@ public partial class TerrainGen : MeshInstance3D
 		
 		// Sætter seed
 		perlinNoise.newSeed(seed);
-		// For hver punkt i zSize+1
-		for(int z = 0; z < zSize+1; z++)
+		// For hver punkt i zSize
+		for(int z = 0; z < zSize; z++)
 		{
-			// For hver punkt xSize+1
-			for(int x = 0; x < xSize+1; x++)
+			// For hver punkt xSize
+			for(int x = 0; x < xSize; x++)
 			{
-
-
 				// Bestemmer y-værdi til vertex (højde) ud fra Noise (16 oktaver for masser af detaljer)
 				y = NoiseMAGIC(x*vertDistance,z*vertDistance, 16) * MULTIPLIER;
 				
@@ -203,13 +190,17 @@ public partial class TerrainGen : MeshInstance3D
 
 				}
 
-				if (y <= SANDLEVEL && y > waterLevel){image.SetPixel(x, z, new Color(1.0f, 1.0f, 0.0f, 1.0f));} // VERTEX IS SAND - SET COLOR TO YELLOW
+				// VERTEX IS SAND - SET COLOR TO YELLOW
+				if (y <= SANDLEVEL && y > waterLevel){image.SetPixel(x, z, new Color(1.0f, 1.0f, 0.0f, 1.0f));}
 
-				if (y <= ROCKLEVEL && y > GRASSLEVEL){image.SetPixel(x, z, new Color(0.5f, 0.5f, 0.5f, 1.0f));} // VERTEX IS ROCK - SET COLOR TO GREY
+				// VERTEX IS ROCK - SET COLOR TO GREY
+				if (y <= ROCKLEVEL && y > GRASSLEVEL){image.SetPixel(x, z, new Color(0.5f, 0.5f, 0.5f, 1.0f));}
 
-				if (y > ROCKLEVEL){image.SetPixel(x, z, new Color(1.0f, 1.0f, 1.0f, 1.0f));} // VERTEX IS SNOW - SET COLOR TO WHITE
+				// VERTEX IS SNOW - SET COLOR TO WHITE
+				if (y > ROCKLEVEL){image.SetPixel(x, z, new Color(1.0f, 1.0f, 1.0f, 1.0f));}
 
-				if (y <= GRASSLEVEL && y > SANDLEVEL) // VERTEX IS GRASS (Her skal der genereres træer)
+				// VERTEX IS GRASS (Her skal der genereres træer)
+				if (y <= GRASSLEVEL && y > SANDLEVEL) 
 				{
 					// SET COLOR TO GREEN
 					image.SetPixel(x, z, new Color(0.0f, 1.0f, 0.0f, 1.0f));
@@ -226,11 +217,10 @@ public partial class TerrainGen : MeshInstance3D
 					//perlinNoise.newSeed(seed);
 					
 					// Bestemmer værdi for træ-noise (3 oktaver for at få mere simpel/udlignet støj)
-					træNoise = NoiseMAGIC(x*vertDistance,z*vertDistance, 16);
+					træNoise = NoiseMAGIC(x*vertDistance,z*vertDistance+zSize*vertDistance*2, 16);
 					
 					// Generer tilfældigt tal mellem 0 og 1 og anvend negativ aftagende eksponentialfunktion  - manipulerer densitet af "skove"
 					float random = CumulativeDistribution((float)new Random().NextDouble(), distributionFaktor);
-
 
 					// Vi behandler generering af træer forskelligt efter hvor høj Noise-værdien er
 					// Hvis støjværdien er højere end threshold:
@@ -250,6 +240,8 @@ public partial class TerrainGen : MeshInstance3D
 						genererTræ = false;
 					}
 
+					// Hvis resolution er mindre end 1, fjerner vi træer efter resolution, da der ellers vil opstå for mange
+					if(resolution < 1 && genererTræ){if(new Random().NextDouble() > resolution){genererTræ = false;}}
 					
 					// Hvis træ skal genereres, gør vi kanten blødere efter træKantBlur
 					if(genererTræ)
@@ -300,28 +292,18 @@ public partial class TerrainGen : MeshInstance3D
 					{
 						// Sætter seed for x-offset & Bestemmer random x offset for træ
 						//perlinNoise.newSeed("feaugajdsnba");
-						xOffset = (NoiseMAGIC(x*10000/(z*vertDistance*distanceToMountain+10),  z*10000/(x*vertDistance*distanceToMountain+10), 16)-0.5f)*2.5f;
+						xOffset = (NoiseMAGIC(x*10000/(z*vertDistance*distanceToMountain+10)+xSize*vertDistance*2,  z*10000/(x*vertDistance*distanceToMountain+10), 16)-0.5f)*2.5f;
 
 
 						// Sætter seed for z-offset & Bestemmer random z offset for træ
 						//perlinNoise.newSeed("fehvfe7s83");
-						zOffset = (NoiseMAGIC(x*10000/(z*vertDistance*distanceToMountain+10),  z*10000/(x*vertDistance*distanceToMountain+10), 16)-0.5f)*2.5f;
+						zOffset = (NoiseMAGIC(x*10000/(z*vertDistance*distanceToMountain+10)+xSize*vertDistance*3,  z*10000/(x*vertDistance*distanceToMountain+10), 16)-0.5f)*2.5f;
 						
 
 						// Clamp værdier for x og z-offset
 						xOffset = Mathf.Clamp(xOffset, -1, 1)*maxTræOffset;
 						zOffset = Mathf.Clamp(zOffset, -1, 1)*maxTræOffset;
 
-						
-						Testværdi +=1;
-
-						if(Testværdi > 5000)
-						{
-							GD.Print("xOffset: " + xOffset);
-							GD.Print("zOffset: " + zOffset);
-							GD.Print("");
-							Testværdi = 0;
-						}
 
 						// Får ny y-værdi for træ fra samme Noise funktion, men med offset
 						float y2 = NoiseMAGIC(x*vertDistance+xOffset,z*vertDistance+zOffset, 16) * MULTIPLIER;
@@ -365,28 +347,28 @@ public partial class TerrainGen : MeshInstance3D
 		vert = 0;
 
 		// For hver punkt i zSize
-		for(int z = 0; z < zSize; z++)
+		for(int z = 0; z < zSize-1; z++)
 		{
 			// For hver punkt i xSize
-			for(int x = 0; x < xSize; x++)
+			for(int x = 0; x < xSize-1; x++)
 			{
 				// Laver trekant 1 i urets rækkefølge
-				st.AddIndex(vert+0);
-				st.AddIndex(vert+1);
-				st.AddIndex(vert + xSize + 1);
+				st.AddIndex(vert);
+				st.AddIndex(vert + 1);
+				st.AddIndex(vert + xSize);
 
 				// Laver trekant 2 i urets rækkefølge
-				st.AddIndex(vert + xSize + 1);
+				st.AddIndex(vert + xSize);
 				st.AddIndex(vert + 1);
-				st.AddIndex(vert + xSize + 2);
+				st.AddIndex(vert + xSize + 1);
 
 				// Gå til næste vertex
 				vert++;
 			}
 			vert++;
 			// Gå til næste vertex
-
 		}
+
 		// Generer Normals ved brug af SurfaceTool
 		st.GenerateNormals();
 
