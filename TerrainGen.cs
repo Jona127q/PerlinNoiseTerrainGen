@@ -34,7 +34,8 @@ public partial class TerrainGen : MeshInstance3D
 	public float waterLevel = 150.0f;
 
 	[Export]
-	public string seed = "schmungus";
+	public string seed = "";
+	public bool emptySeed = true;
 	public float SANDLEVEL;
 
 	public float GRASSLEVEL;
@@ -135,7 +136,13 @@ public partial class TerrainGen : MeshInstance3D
 			GD.Print("Træer fjernet");
 
 			// Sætter seed for Perlin Noise (Til Mesh)
+			if(string.IsNullOrEmpty(seed)){
+				seed = Convert.ToString(new Random().Next());
+				emptySeed = true;
+			}
+
 			perlinNoise.newSeed(seed);
+
 			GD.Print("Seed set");
 
 			// Manipuler detaljeringsgraden af terrain
@@ -147,6 +154,8 @@ public partial class TerrainGen : MeshInstance3D
 			// Generer terrain
 			Generate_Terrain();
 			GD.Print("Terrain Generated");
+			if(emptySeed) seed = "";
+			emptySeed = false;
 		}
 	}
 
@@ -169,6 +178,8 @@ public partial class TerrainGen : MeshInstance3D
 		// Starter Surfacetool
 		st.Begin(Mesh.PrimitiveType.Triangles);
 		
+		// Sætter seed
+		perlinNoise.newSeed(seed);
 		// For hver punkt i zSize+1
 		for(int z = 0; z < zSize+1; z++)
 		{
@@ -176,8 +187,6 @@ public partial class TerrainGen : MeshInstance3D
 			for(int x = 0; x < xSize+1; x++)
 			{
 
-				// Sætter seed
-				perlinNoise.newSeed(seed);
 
 				// Bestemmer y-værdi til vertex (højde) ud fra Noise (16 oktaver for masser af detaljer)
 				y = NoiseMAGIC(x*vertDistance,z*vertDistance, 16) * MULTIPLIER;
@@ -214,7 +223,7 @@ public partial class TerrainGen : MeshInstance3D
 					
 
 					// Sætter seed for træ-noise
-					perlinNoise.newSeed(TræNoiseSeed);
+					//perlinNoise.newSeed(seed);
 					
 					// Bestemmer værdi for træ-noise (3 oktaver for at få mere simpel/udlignet støj)
 					træNoise = NoiseMAGIC(x*vertDistance,z*vertDistance, 16);
@@ -290,12 +299,12 @@ public partial class TerrainGen : MeshInstance3D
 					if(genererTræ)
 					{
 						// Sætter seed for x-offset & Bestemmer random x offset for træ
-						perlinNoise.newSeed("feaugajdsnba");
+						//perlinNoise.newSeed("feaugajdsnba");
 						xOffset = (NoiseMAGIC(x*10000/(z*vertDistance*distanceToMountain+10),  z*10000/(x*vertDistance*distanceToMountain+10), 16)-0.5f)*2.5f;
 
 
 						// Sætter seed for z-offset & Bestemmer random z offset for træ
-						perlinNoise.newSeed("fehvfe7s83");
+						//perlinNoise.newSeed("fehvfe7s83");
 						zOffset = (NoiseMAGIC(x*10000/(z*vertDistance*distanceToMountain+10),  z*10000/(x*vertDistance*distanceToMountain+10), 16)-0.5f)*2.5f;
 						
 
@@ -313,9 +322,6 @@ public partial class TerrainGen : MeshInstance3D
 							GD.Print("");
 							Testværdi = 0;
 						}
-
-						// Sætter seed til MeshSeed
-						perlinNoise.newSeed(seed);
 
 						// Får ny y-værdi for træ fra samme Noise funktion, men med offset
 						float y2 = NoiseMAGIC(x*vertDistance+xOffset,z*vertDistance+zOffset, 16) * MULTIPLIER;
@@ -343,8 +349,6 @@ public partial class TerrainGen : MeshInstance3D
 				st.AddVertex(new Vector3(x*vertDistance, y, z*vertDistance));
 
 			}
-
-
 		}
 
 		
@@ -383,8 +387,6 @@ public partial class TerrainGen : MeshInstance3D
 			// Gå til næste vertex
 
 		}
-
-
 		// Generer Normals ved brug af SurfaceTool
 		st.GenerateNormals();
 
@@ -458,6 +460,4 @@ public partial class TerrainGen : MeshInstance3D
 		// Funktion / ligning: (1 - e^(-y*x))/(1 - e^(-y))
 		return(float)(1 - Mathf.Pow(e, -y * x))/(1 - Mathf.Pow(e, -y));
 	}
-
-
 }
